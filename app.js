@@ -540,7 +540,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     mapViewBtn.addEventListener('click', () => {
         if (!isMapViewEnabled()) {
-            console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
+            console.log('Map view is disabled. Add ?enableMapView=1 to URL to enable it.');
             return;
         }
         
