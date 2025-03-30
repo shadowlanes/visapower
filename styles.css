@@ -691,12 +691,10 @@ footer i {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2rem;
-    padding: 1.2rem 2rem;
-    background: linear-gradient(to right, #2c3e50, #4a6491);
-    color: #f5f5f5;
-    border-radius: 8px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    padding: 1rem 0;
+    color: var(--text-light);
+    border-top: 1px solid var(--border-color);
 }
 
 .footer-left p, 
@@ -717,7 +715,7 @@ footer i {
 
 .footer-right .github-link {
     font-size: 1.4rem;
-    color: #f5f5f5;
+    color: var(--text-color);
     text-decoration: none;
     transition: all 0.3s ease;
     display: inline-flex;
@@ -726,12 +724,12 @@ footer i {
 
 .footer-right .github-link:hover {
     transform: translateY(-3px) scale(1.1);
-    color: #3cc0a1;
+    color: var(--secondary-color);
 }
 
 .simplified-footer .author-name {
     font-weight: 600;
-    color: #3cc0a1;
+    color: var(--primary-color);
 }
 
 @media (max-width: 768px) {
@@ -739,7 +737,7 @@ footer i {
         flex-direction: column;
         gap: 12px;
         text-align: center;
-        padding: 1rem;
+        padding: 1rem 0;
     }
     
     .footer-left, .footer-center, .footer-right {
