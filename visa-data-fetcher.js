@@ -3,6 +3,9 @@ class VisaDataFetcher {
         // Initialize with empty data structure
         this.visaData = {};
         
+        // Initialize countryVisaData if it doesn't exist (should already be created by the script tags)
+        window.countryVisaData = window.countryVisaData || {};
+        
         // Aggregate data from all country visa data files
         this.aggregateVisaData();
         
@@ -11,18 +14,23 @@ class VisaDataFetcher {
 
     // Aggregate visa data from all country files loaded via script tags
     aggregateVisaData() {
-        // Check if the countryVisaData object exists (populated by individual country data files)
-        if (typeof window.countryVisaData !== 'undefined') {
+        // Check if the countryVisaData object exists and has data
+        if (window.countryVisaData && Object.keys(window.countryVisaData).length > 0) {
             // Copy all country data into our visaData object
             this.visaData = { ...window.countryVisaData };
             
             // Extract and process special visa types from additionalAccess properties
             this.processSpecialVisaTypes();
         } else {
-            console.error('countryVisaData is not defined. Make sure country visa data files are loaded properly.');
+            console.error('No country visa data available. Make sure visa data files are loaded properly.');
         }
     }
     
+    // Returns a promise that resolves immediately since data is already loaded via script tags
+    whenDataLoaded() {
+        return Promise.resolve();
+    }
+
     // Extract special visa types from additionalAccess properties in country data
     processSpecialVisaTypes() {
         // Iterate through all countries

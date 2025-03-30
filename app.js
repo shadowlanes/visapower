@@ -313,9 +313,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                     ...result['visa-free'],
                     ...visaData.visaFreeWithThisVisa.map(entry => entry.country)
                 ];
-            }
+            } 
         }); 
         
+        // Check if any selected visa is a Schengen country
+        const hasSchengenVisa = visas.some(visa => Object.keys(schengenCountries).includes(visa));
+
+        // If a Schengen visa is selected, add all Schengen countries to visa-free countries
+        if (hasSchengenVisa) {
+            for (const countryName in schengenCountries) {
+                result['visa-free'].push(countryName);
+            }
+        }
+
         const validCountries = Object.keys(countryCodeMapping);
         Object.keys(result).forEach(type => {
             result[type] = [...new Set(result[type])]
