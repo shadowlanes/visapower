@@ -28,6 +28,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     passportSearchContainer.appendChild(passportResults);
     passportSelectContainer.replaceChild(passportSearchContainer, passportSelect);
     
+    // Set default passport country to India
+    passportSearch.value = 'India';
+    selectedPassport = 'India';
+    
+    // Remove disabled class from visas container if it exists
+    visasContainer.classList.remove('disabled-container');
+    
+    // Populate visas and calculate results based on India as default
+    setTimeout(() => {
+        populateVisas();
+        calculateAndDisplayResults();
+    }, 100);
+    
     // Create an element to display country counts
     const countDisplay = document.createElement('div');
     countDisplay.className = 'country-count-display';
@@ -41,7 +54,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         'e-visa': [],
         'all': [] // Add "All" category
     };
-    let selectedPassport = '';
     
     let mapView;
 
