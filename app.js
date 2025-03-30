@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             } else if (accessibleCountries['visa-on-arrival'].includes(country)) {
                 categoryClass = 'visa-on-arrival-bar';
                 accessType = 'visaOnArrival';
-            } else if (accessibleCountries['e-visa'].includes(country)) {
+            } else if (accessibleCountries['e-visa'].includes(country)) { 
                 categoryClass = 'e-visa-bar';
                 accessType = 'eVisa';
             }
@@ -435,10 +435,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             const tooltipHTML = generateTooltipHTML(country, accessType, visaInfo);
+            
+            // Add flag background using country code
+            const countryCode = countryCodeMapping[country];
+            const flagStyle = countryCode ? `style="--flag-url: url('https://flagcdn.com/${countryCode}.svg');"` : '';
 
             html += `
-                <div class="country-card">
-                    <span class="country-bar ${categoryClass}"></span>
+                <div class="country-card with-flag-bg ${categoryClass ? categoryClass.replace('-bar', '-card') : ''}" ${flagStyle}>
                     <span>${country}</span>
                     ${tooltipHTML}
                 </div>

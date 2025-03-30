@@ -932,3 +932,39 @@ footer i {
         font-size: 1rem;
     }
 }
+
+/* Country card with flag background */
+.country-card.with-flag-bg {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.country-card.with-flag-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--flag-url, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.08;  /* Light overlay - adjust as needed */
+    z-index: -1;
+    pointer-events: none;  /* So it doesn't interfere with clicks */
+    border-radius: 6px;  /* To keep rounded corners */
+    filter: saturate(0.8);  /* Slightly desaturate the flags for better text contrast */
+}
+
+.country-card.with-flag-bg:hover::after {
+    opacity: 0.18;  /* Slightly more visible on hover */
+}
+
+/* Ensure text remains readable over flag backgrounds */
+.country-card.with-flag-bg span {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);  /* Add subtle text shadow for better readability */
+}
