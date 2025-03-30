@@ -327,6 +327,7 @@ select:hover, select:focus {
     border-bottom: 2px solid var(--border-color);
 }
 
+/* Category header styles */
 .tab-btn {
     background: none;
     border: none;
@@ -338,17 +339,37 @@ select:hover, select:focus {
     transition: all 0.3s ease;
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
+    border-bottom: 3px solid transparent; /* Default border */
 }
 
 .tab-btn:hover {
     opacity: 0.9;
+}
+
+.tab-btn[data-type="all"] {
+    color: var(--text-color);
+    border-color: var(--text-light);
+}
+
+.tab-btn[data-type="visa-free"] {
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.tab-btn[data-type="visa-on-arrival"] {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.tab-btn[data-type="e-visa"] {
     color: var(--secondary-color);
+    border-color: var(--secondary-color);
 }
 
 .tab-btn.active {
     opacity: 1;
     font-weight: 600;
-    color: var(--secondary-color);
+    border-bottom: 3px solid currentColor; /* Highlight active tab */
 }
 
 .tab-btn.active::after {
@@ -467,6 +488,28 @@ select:hover, select:focus {
 
 .e-visa-card:hover {
     box-shadow: 0 10px 20px rgba(49, 181, 255, 0.15);
+}
+
+/* Add color-coded bar for each country */
+.country-bar {
+    display: inline-block;
+    width: 8px;
+    height: 20px; /* Adjust height to align with text */
+    margin-right: 10px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.visa-free-bar {
+    background-color: var(--success-color);
+}
+
+.visa-on-arrival-bar {
+    background-color: var(--accent-color);
+}
+
+.e-visa-bar {
+    background-color: var(--secondary-color);
 }
 
 /* Empty state */

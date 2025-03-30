@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let accessibleCountries = {
         'visa-free': [],
         'visa-on-arrival': [],
-        'e-visa': []
+        'e-visa': [],
+        'all': [] // Add "All" category
     };
     
     let mapView;
@@ -153,7 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
         accessibleCountries = {
             'visa-free': [],
             'visa-on-arrival': [],
-            'e-visa': []
+            'e-visa': [],
+            'all': [] // Reset "All" category
         }; 
         
         // First add countries accessible due to passport
@@ -212,67 +214,70 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }); 
         
-        // Remove duplicates and sort
-        accessibleCountries['visa-free'] = [...new Set(accessibleCountries['visa-free'])].sort();
-        accessibleCountries['visa-on-arrival'] = [...new Set(accessibleCountries['visa-on-arrival'])].sort();
-        accessibleCountries['e-visa'] = [...new Set(accessibleCountries['e-visa'])].sort();
+        // Remove duplicates, invalid entries, and sort
+        const validCountries = Object.keys(countryCodeMapping); // Use countryCodeMapping for validation
+        Object.keys(accessibleCountries).forEach(type => {
+            accessibleCountries[type] = [...new Set(accessibleCountries[type])]
+                .filter(country => validCountries.includes(country)) // Filter valid countries
+                .sort();
+        });
         
         // Remove passport country from results
         Object.keys(accessibleCountries).forEach(type => {
             accessibleCountries[type] = accessibleCountries[type].filter(country => country !== passport);
         });
+
+        // Populate "All" category with combined unique entries
+        accessibleCountries['all'] = [
+            ...new Set([
+                ...accessibleCountries['visa-free'],
+                ...accessibleCountries['visa-on-arrival'],
+                ...accessibleCountries['e-visa']
+            ])
+        ].sort();
     }
     
     // Display results based on currently selected tab and view
     function displayResults() {
         // If map view is active and enabled, update the map
         if (currentView === 'map' && isMapViewEnabled()) {
-            // Only update map if it's initialized
             if (mapView && mapView.map) {
                 mapView.updateData(accessibleCountries, currentTab);
             }
             return;
         }
-        
+
         // Otherwise, display grid view
         const countries = accessibleCountries[currentTab];
-        
+
         if (countries.length === 0) {
             resultsContainer.innerHTML = '<p class="empty-state">No countries found for this category</p>';
             return;
         }
-         
+
         let html = '<div class="country-grid">';
-        
-        // Color code the cards based on their access type
-        if (currentTab === 'visa-free') {
-            countries.forEach(country => {
-                html += `
-                    <div class="country-card visa-free-card">
-                        <span>${country}</span>
-                    </div>
-                `;
-            });
-        } else if (currentTab === 'visa-on-arrival') {
-            countries.forEach(country => {
-                html += `
-                    <div class="country-card visa-on-arrival-card">
-                        <span>${country}</span>
-                    </div>
-                `;
-            });
-        } else if (currentTab === 'e-visa') {
-            countries.forEach(country => {
-                html += `
-                    <div class="country-card e-visa-card">
-                        <span>${country}</span>
-                    </div>
-                `;
-            });
-        }
-        
+
+        // Add color-coded bar for each country based on its category
+        countries.forEach(country => {
+            let categoryClass = '';
+            if (accessibleCountries['visa-free'].includes(country)) {
+                categoryClass = 'visa-free-bar';
+            } else if (accessibleCountries['visa-on-arrival'].includes(country)) {
+                categoryClass = 'visa-on-arrival-bar';
+            } else if (accessibleCountries['e-visa'].includes(country)) {
+                categoryClass = 'e-visa-bar';
+            }
+
+            html += `
+                <div class="country-card">
+                    <span class="country-bar ${categoryClass}"></span>
+                    <span>${country}</span>
+                </div>
+            `;
+        });
+
         html += '</div>';
-        
+
         resultsContainer.innerHTML = html;
     }
     
@@ -281,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function() {
         accessibleCountries = {
             'visa-free': [],
             'visa-on-arrival': [],
-            'e-visa': []
+            'e-visa': [],
+            'all': [] // Reset "All" category
         };
         resultsContainer.innerHTML = '<p class="empty-state">Select your passport and visas to see available countries</p>';
     }
@@ -306,6 +312,32 @@ document.addEventListener('DOMContentLoaded', function() {
             displayResults();
         });
     });
+
+    // Add "All" tab to the results tabs
+    function addAllTab() {
+        const allTab = document.createElement('button');
+        allTab.className = 'tab-btn'; // Default inactive tab
+        allTab.dataset.type = 'all';
+        allTab.textContent = 'All';
+        document.querySelector('.results-tabs').prepend(allTab);
+
+        // Update tabButtons to include the new "All" tab
+        const updatedTabButtons = document.querySelectorAll('.tab-btn');
+        updatedTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                updatedTabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentTab = button.dataset.type;
+                displayResults();
+            });
+        });
+
+        // Set "All" as the default active tab
+        allTab.click();
+    }
+
+    // Call addAllTab after the DOM is ready
+    addAllTab();
     
     // View switching
     gridViewBtn.addEventListener('click', () => {
