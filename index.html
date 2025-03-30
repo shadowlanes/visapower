@@ -23,7 +23,7 @@
                 <div class="input-group">
                     <label for="passport-country"><i class="fas fa-globe-americas"></i> Your Passport Country</label>
                     <select id="passport-country" required>
-                        <option value="" disabled selected>Select your passport country</option>
+                        <option value="" disabled selected>Select</option>
                         <!-- Will be populated dynamically -->
                     </select>
                 </div> 
@@ -111,5 +111,32 @@
     <script src="data/country-codes.js"></script>
     <script src="map-view.js"></script>
     <script src="app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const countryDropdown = document.getElementById('passport-country');
+
+            // Populate dropdown with country codes as values and names as display text
+            Object.entries(countryCodeMapping).forEach(([countryName, countryCode]) => {
+                const option = document.createElement('option');
+                option.value = countryCode;
+                option.textContent = countryName;
+                countryDropdown.appendChild(option);
+            });
+
+            // Fetch visitor's country using an IP geolocation API
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    const countryCode = data.country_code.toLowerCase();
+
+                    // Auto-select the country if it exists in the dropdown
+                    const countryOption = Array.from(countryDropdown.options).find(option => option.value === countryCode);
+                    if (countryOption) {
+                        countryOption.selected = true;
+                    }
+                })
+                .catch(error => console.error('Error fetching country data:', error));
+        });
+    </script>
 </body>
 </html>
