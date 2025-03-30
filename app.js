@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         mapViewBtn.style.display = 'none';
     }
     
-    // Initialize map view only when dependencies are loaded and view is enabled
+    // Modify the initializeMapView function
     function initializeMapView() {
         if (!isMapViewEnabled()) {
             console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
@@ -108,8 +108,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.vectorMap !== 'undefined') {
-            console.log('Initializing map view...');
-            mapView = new MapView('#world-map');
+            // Create a singleton instance of MapView that will be used
+            // throughout the application but won't initialize the map yet
+            console.log('Map dependencies loaded, creating MapView instance');
+            if (!mapView) {
+                mapView = new MapView('#world-map');
+            }
         } else {
             console.warn('jQuery or jVectorMap not loaded yet. Delaying map initialization...');
             setTimeout(initializeMapView, 500);
@@ -389,7 +393,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateCountDisplay(countries);
         
         if (currentView === 'map' && isMapViewEnabled()) {
-            if (mapView && mapView.map) {
+            if (mapView && mapView.initialized) {
+                //console.log('Updating map with new data');
                 mapView.updateData(accessibleCountries, currentTab);
             }
             return;
@@ -539,11 +544,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
         
+        console.log('Map view selected');
         mapViewBtn.classList.add('active');
         gridViewBtn.classList.remove('active');
         mapViewContent.classList.add('active');
         gridViewContent.classList.remove('active');
         currentView = 'map';
+        
+        // Initialize and display the map on demand
+        if (!mapView) {
+            console.log('Creating MapView instance (first time)');
+            mapView = new MapView('#world-map');
+            mapView.delayedInit();
+        } else if (!mapView.initialized) {
+            console.log('MapView exists but needs initialization');
+            mapView.init();
+        } else {
+            console.log('MapView already initialized, just updating data');
+        }
+        
+        // This will update the map with current data
         displayResults(accessibleCountries);
     });
 });

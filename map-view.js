@@ -1,7 +1,6 @@
 class MapView {
     constructor(mapElementId) {
         this.mapElementId = mapElementId;
-        this.map = null;
         this.accessibleCountries = {
             'visa-free': [],
             'visa-on-arrival': [],
@@ -9,6 +8,7 @@ class MapView {
         };
         this.countryAccessMap = {};
         this.currentTab = 'visa-free';
+        this.initialized = false;
         
         // Define colors for different access types
         this.colors = {
@@ -18,13 +18,44 @@ class MapView {
             'no-access': '#e0e0e0'        // Light gray
         };
         
-        this.init();
+    }
+    
+    delayedInit() {
+        // Wait a moment to ensure the DOM is fully loaded
+        setTimeout(() => {
+            const $mapContainer = $(this.mapElementId);
+            if ($mapContainer.is(':visible') && $mapContainer.width() > 0) {
+                this.init();
+            } else {
+                console.log('Map container not visible yet, deferring initialization');
+            }
+        }, 100);
     }
     
     init() {
+        if (this.initialized) {
+            console.log('Map already initialized, skipping');
+            return;
+        }
+
         try {
+            // Ensure the map container is visible with proper dimensions
+            const $mapContainer = $(this.mapElementId);
+            $mapContainer.css({
+                'display': 'block',
+                'width': '100%',
+                'height': '400px',
+                'min-height': '400px'
+            });
+
+            // Force a reflow to apply dimensions
+            $mapContainer[0].offsetHeight;
+
+            console.log('Initializing map with dimensions:', 
+                $mapContainer.width(), 'x', $mapContainer.height());
+
             // Initialize the map using jqvmap
-            $(this.mapElementId).vectorMap({
+            $mapContainer.vectorMap({
                 map: 'world_en',
                 backgroundColor: '#f8f9fa',
                 borderColor: '#ffffff',
@@ -33,12 +64,21 @@ class MapView {
                 color: this.colors['no-access'],
                 hoverOpacity: 0.7,
                 selectedColor: '#666666',
-                enableZoom: true,
+                enableZoom: false,
                 showTooltip: true,
-                onRegionTipShow: (e, el, code) => this.showTooltip(e, el, code)
+                onRegionTipShow: (e, el, code) => this.showTooltip(e, el, code),
+                onRegionClick: function(element, code, region)
+                    {
+                        var message = 'You clicked "'
+                            + region
+                            + '" which has the code: '
+                            + code.toUpperCase();
+
+                        console.log(message);
+                    }
             });
             
-            this.map = $(this.mapElementId).vectorMap('get', 'mapObject');
+            this.initialized = true;
             console.log('Map initialized successfully');
         } catch (error) {
             console.error('Error initializing map:', error);
@@ -49,6 +89,13 @@ class MapView {
     updateData(accessibleCountries, currentTab) {
         this.accessibleCountries = accessibleCountries;
         this.currentTab = currentTab;
+        
+        // If not initialized yet, initialize first
+        if (!this.initialized) {
+            console.log('Map not initialized yet, initializing now');
+            this.init();
+        }
+        
         this.updateCountryAccessMap();
         this.updateMapColors();
     }
@@ -80,35 +127,47 @@ class MapView {
                 this.countryAccessMap[countryCode] = 'e-visa';
             }
         });
+        
+        return this.countryAccessMap;
     }
     
     // Update map colors based on the current tab
     updateMapColors() {
-        if (!this.map) {
+        if (!this.initialized) {
             console.warn('Map not fully initialized, cannot set colors');
             return;
         }
 
-        const colors = {};
+        console.log(`Updating map colors for tab: ${this.currentTab}`);
 
-        // Set colors based on the currently active tab
+        // Reset colors by setting all countries to no-access first
+        let allCountryCodes = {};
+        for (let code in countryCodeMapping) {
+            const isoCode = countryCodeMapping[code].toLowerCase();
+            allCountryCodes[isoCode] = this.colors['no-access'];
+        }
+
+        // Then apply the colors based on current tab and country access
         Object.keys(this.countryAccessMap).forEach(countryCode => {
             const accessType = this.countryAccessMap[countryCode];
             
-            if (this.currentTab === 'visa-free' && accessType === 'visa-free') {
-                colors[countryCode] = this.colors['visa-free'];
-            } else if (this.currentTab === 'visa-on-arrival' && accessType === 'visa-on-arrival') {
-                colors[countryCode] = this.colors['visa-on-arrival'];
-            } else if (this.currentTab === 'e-visa' && accessType === 'e-visa') {
-                colors[countryCode] = this.colors['e-visa'];
-            } else {
-                colors[countryCode] = this.colors['no-access'];
+            if (this.currentTab === 'all') {
+                // For 'all' tab, show all countries with their respective colors
+                allCountryCodes[countryCode] = this.colors[accessType];
+            } else if (this.currentTab === accessType) {
+                // For specific tabs, only highlight countries matching that access type
+                allCountryCodes[countryCode] = this.colors[accessType];
             }
+            // Otherwise leave as no-access (already set above)
         });
 
         try {
+            // Debug to verify the color map has the correct data
+            // console.log(`Countries to color: ${Object.keys(this.countryAccessMap).length}`);
+            // console.log(`Total color assignments: ${Object.keys(allCountryCodes).length}`);
+
             // Update the map colors using the correct jQVMap API method
-            $(this.mapElementId).vectorMap('set', 'colors', colors);
+            $(this.mapElementId).vectorMap('set', 'colors', allCountryCodes);
         } catch (error) {
             console.error('Error updating map colors:', error);
         }
