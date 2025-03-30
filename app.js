@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function isMapViewEnabled() {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('enabledMapView') === '1';
-    }
+    } 
     
     // Hide map view button if not enabled
     if (!isMapViewEnabled()) {

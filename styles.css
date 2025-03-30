@@ -22,14 +22,14 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px; /* Increased for better side-by-side layout */
     margin: 0 auto;
     padding: 2rem;
 }
-
+ 
 header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 header h1 {
@@ -43,12 +43,29 @@ header p {
     font-size: 1.1rem;
 }
 
+/* New layout container for side-by-side design */
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 .input-section {
     background-color: var(--card-color);
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.results-section {
+    background-color: var(--card-color);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 2;
+    min-width: 300px;
 }
 
 .input-group {
@@ -98,13 +115,6 @@ small {
     background-color: var(--secondary-color);
 }
 
-.results-section {
-    background-color: var(--card-color);
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 .results-section h2 {
     margin-bottom: 1.5rem;
     color: var(--primary-color);
@@ -147,7 +157,7 @@ small {
 
 .country-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Adjusted for better fit in side-by-side */
     gap: 15px;
 }
 
@@ -172,7 +182,7 @@ small {
 }
  
 .checkbox-container {
-    max-height: 200px;
+    max-height: 300px; /* Increased for better visibility in side-by-side */
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -278,6 +288,16 @@ footer {
     background-color: #f0f0f0;
 }
 
+.jqvmap-label {
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    text-align: center;
+
+}
+
 .map-legend {
     display: flex;
     justify-content: center;
@@ -322,9 +342,18 @@ footer {
     font-size: 12px;
 }
  
+/* Responsive design - revert to stacked layout on mobile */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
+    }
+
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .input-section, .results-section {
+        width: 100%;
     }
      
     .country-grid {
