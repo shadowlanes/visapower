@@ -8,6 +8,31 @@ document.addEventListener('DOMContentLoaded', async function() {
     const gridViewContent = document.getElementById('grid-view');
     const mapViewContent = document.getElementById('map-view');
     
+    // Create elements for the new passport search container
+    const passportSelectContainer = passportSelect.parentElement;
+    const passportSearchContainer = document.createElement('div');
+    passportSearchContainer.className = 'passport-search-container';
+    
+    // Replace the select with a search box and results container
+    const passportSearch = document.createElement('input');
+    passportSearch.type = 'text';
+    passportSearch.id = 'passport-search';
+    passportSearch.className = 'search-box';
+    passportSearch.placeholder = 'Search for your passport country...';
+    
+    const passportResults = document.createElement('div');
+    passportResults.className = 'passport-results';
+    
+    // Replace the select element with our new components
+    passportSearchContainer.appendChild(passportSearch);
+    passportSearchContainer.appendChild(passportResults);
+    passportSelectContainer.replaceChild(passportSearchContainer, passportSelect);
+    
+    // Create an element to display country counts
+    const countDisplay = document.createElement('div');
+    countDisplay.className = 'country-count-display';
+    document.querySelector('.results-tabs').after(countDisplay);
+    
     let currentTab = 'visa-free';
     let currentView = 'grid';
     let accessibleCountries = {
@@ -16,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         'e-visa': [],
         'all': [] // Add "All" category
     };
+    let selectedPassport = '';
     
     let mapView;
 
@@ -50,13 +76,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Initialize map view only when dependencies are loaded and view is enabled
     function initializeMapView() {
-        // Only initialize if map view is enabled
         if (!isMapViewEnabled()) {
             console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
             return;
         }
         
-        // Check if jQuery and jVectorMap are available before initializing
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.vectorMap !== 'undefined') {
             console.log('Initializing map view...');
             mapView = new MapView('#world-map');
@@ -66,12 +90,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-    // Start map initialization process
     initializeMapView();
 
-    // Populate country dropdown selects
-    function populateCountryDropdowns() {
-        // Get unique list of countries from our data and filter out visa entries
+    // Update the country count display
+    function updateCountDisplay(countries) {
+        if (!countries || !countries[currentTab]) {
+            countDisplay.textContent = 'No countries found';
+            return;
+        }
+        
+        const count = countries[currentTab].length;
+        const categoryName = currentTab === 'all' ? 'Total' : 
+                            currentTab === 'visa-free' ? 'Visa-Free' :
+                            currentTab === 'visa-on-arrival' ? 'Visa on Arrival' : 'e-Visa';
+        
+        countDisplay.textContent = `${count} ${categoryName} ${count === 1 ? 'Country' : 'Countries'} Available`;
+    }
+
+    // Populate passport search results
+    function populatePassportResults(searchTerm = '') {
         const visaData = visaDataFetcher.visaData;
         if (!visaData) {
             console.error('Visa data not loaded');
@@ -86,106 +123,144 @@ document.addEventListener('DOMContentLoaded', async function() {
                 )
             )
         ])].sort();
+
+        const filteredCountries = searchTerm 
+            ? allCountries.filter(country => country.toLowerCase().includes(searchTerm.toLowerCase()))
+            : allCountries;
         
-        // Populate passport dropdown
-        allCountries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            passportSelect.appendChild(option);
-        }); 
+        passportResults.innerHTML = '';
         
-        // Initially disable the visa container until passport is selected
-        visasContainer.classList.add('disabled-container');
-        
-        // Create a reusable function to populate visas
-        function populateVisas() {
-            // Clear previous checkboxes and notice
-            while (visasContainer.firstChild) {
-                visasContainer.removeChild(visasContainer.firstChild);
-            }
-            
-            // Add search box for visas
-            const searchBox = document.createElement('input');
-            searchBox.type = 'text';
-            searchBox.placeholder = 'Search visas...';
-            searchBox.className = 'search-box';
-            visasContainer.appendChild(searchBox);
-            
-            // Populate visas checkboxes
-            allCountries.forEach(country => {
-                // Don't include the passport country as a visa option
-                if (country === passportSelect.value) return;
-                
-                const checkboxItem = document.createElement('div');
-                checkboxItem.className = 'checkbox-item';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = country;
-                checkbox.id = `visa-${country.replace(/\s+/g, '-').toLowerCase()}`;
-                
-                // Add change event listener to each checkbox
-                checkbox.addEventListener('change', calculateAndDisplayResults);
-                
-                const label = document.createElement('label');
-                label.htmlFor = checkbox.id;
-                label.textContent = country;
-                
-                checkboxItem.appendChild(checkbox);
-                checkboxItem.appendChild(label);
-                visasContainer.appendChild(checkboxItem);
-            });
-            
-            // Add search functionality
-            searchBox.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const checkboxItems = visasContainer.querySelectorAll('.checkbox-item');
-                
-                checkboxItems.forEach(item => {
-                    const label = item.querySelector('label');
-                    const countryName = label.textContent.toLowerCase();
-                    
-                    if (countryName.includes(searchTerm)) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
+        if (filteredCountries.length === 0) {
+            passportResults.innerHTML = '<p class="no-results">No matching countries found</p>';
+            return;
         }
-         
-        // Add change event listener to passport select
-        passportSelect.addEventListener('change', function() {
-            if (this.value) {
+        
+        filteredCountries.forEach(country => {
+            const countryItem = document.createElement('div');
+            countryItem.className = 'passport-country-item';
+            countryItem.textContent = country;
+            countryItem.addEventListener('click', () => {
+                selectedPassport = country;
+                passportSearch.value = country;
+                passportResults.style.display = 'none';
+                
                 visasContainer.classList.remove('disabled-container');
                 populateVisas();
                 calculateAndDisplayResults();
-            } else {
-                visasContainer.classList.add('disabled-container');
-                resetResults();
-            }
+            });
+            passportResults.appendChild(countryItem);
+        });
+        
+        passportResults.style.display = 'block';
+    }
+    
+    passportSearch.addEventListener('focus', () => {
+        populatePassportResults(passportSearch.value);
+    });
+    
+    passportSearch.addEventListener('input', () => {
+        populatePassportResults(passportSearch.value);
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (!passportSearch.contains(e.target) && !passportResults.contains(e.target)) {
+            passportResults.style.display = 'none';
+        }
+    });
+
+    function populateCountryDropdowns() {
+        const visaData = visaDataFetcher.visaData;
+        if (!visaData) {
+            console.error('Visa data not loaded');
+            return;
+        }
+
+        const allCountries = [...new Set([
+            ...Object.keys(visaData).filter(key => !key.endsWith(" Visa")),
+            ...Object.values(visaData).flatMap(country => 
+                Object.values(country).flatMap(accessTypes => 
+                    Array.isArray(accessTypes) ? accessTypes.map(entry => entry.country) : []
+                )
+            )
+        ])].sort();
+
+        populatePassportResults();
+    }
+
+    function populateVisas() {
+        while (visasContainer.firstChild) {
+            visasContainer.removeChild(visasContainer.firstChild);
+        }
+        
+        const visaData = visaDataFetcher.visaData;
+        const allCountries = [...new Set([
+            ...Object.keys(visaData).filter(key => !key.endsWith(" Visa")),
+            ...Object.values(visaData).flatMap(country => 
+                Object.values(country).flatMap(accessTypes => 
+                    Array.isArray(accessTypes) ? accessTypes.map(entry => entry.country) : []
+                )
+            )
+        ])].sort();
+        
+        const searchBox = document.createElement('input');
+        searchBox.type = 'text';
+        searchBox.placeholder = 'Search visas...';
+        searchBox.className = 'search-box';
+        visasContainer.appendChild(searchBox);
+        
+        allCountries.forEach(country => {
+            if (country === selectedPassport) return;
+            
+            const checkboxItem = document.createElement('div');
+            checkboxItem.className = 'checkbox-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = country;
+            checkbox.id = `visa-${country.replace(/\s+/g, '-').toLowerCase()}`;
+            
+            checkbox.addEventListener('change', calculateAndDisplayResults);
+            
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = country;
+            
+            checkboxItem.appendChild(checkbox);
+            checkboxItem.appendChild(label);
+            visasContainer.appendChild(checkboxItem);
+        });
+        
+        searchBox.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const checkboxItems = visasContainer.querySelectorAll('.checkbox-item');
+            
+            checkboxItems.forEach(item => {
+                const label = item.querySelector('label');
+                const countryName = label.textContent.toLowerCase();
+                
+                if (countryName.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         });
     }
 
-    // Calculate accessible countries based on passport and visas
     function calculateAccessibleCountries() {
-        const passport = passportSelect.value;
+        const passport = selectedPassport;
         const visas = Array.from(visasContainer.querySelectorAll('input[type="checkbox"]:checked'))
             .map(checkbox => checkbox.value);
         
-        // Reset results
         const result = {
             'visa-free': [],
             'visa-on-arrival': [],
             'e-visa': [],
-            'all': [] // Reset "All" category
+            'all': []
         }; 
         
-        // Get data using the fetcher
         const passportData = visaDataFetcher.getVisaDataForPassport(passport);
         
-        // First add countries accessible due to passport
         if (passportData) {
             if (passportData.visaFree) {
                 result['visa-free'] = passportData.visaFree.map(entry => entry.country);
@@ -199,7 +274,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 result['e-visa'] = passportData.eVisa.map(entry => entry.country);
             } 
             
-            // Add passport-specific visa benefits if they exist
             if (passportData.additionalAccess) {
                 visas.forEach(visa => {
                     if (passportData.additionalAccess[visa]) {
@@ -230,9 +304,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
         
-        // Then add countries generally accessible with visas (regardless of passport)
         visas.forEach(visa => {
-            const visaKey = visa + " Visa"; // Convert country name to visa key format
+            const visaKey = visa + " Visa";
             const visaData = visaDataFetcher.getGeneralVisaAccess(visaKey);
             
             if (visaData && visaData.visaFreeWithThisVisa) {
@@ -243,20 +316,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }); 
         
-        // Remove duplicates, invalid entries, and sort
-        const validCountries = Object.keys(countryCodeMapping); // Use countryCodeMapping for validation
+        const validCountries = Object.keys(countryCodeMapping);
         Object.keys(result).forEach(type => {
             result[type] = [...new Set(result[type])]
-                .filter(country => validCountries.includes(country)) // Filter valid countries
+                .filter(country => validCountries.includes(country))
                 .sort();
         });
         
-        // Remove passport country from results
         Object.keys(result).forEach(type => {
             result[type] = result[type].filter(country => country !== passport);
         });
 
-        // Populate "All" category with combined unique entries
         result['all'] = [
             ...new Set([
                 ...result['visa-free'],
@@ -268,12 +338,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         return result;
     }
     
-    // Display results based on currently selected tab and view
     function displayResults(countries) {
-        // Store the results in the accessibleCountries global variable
         accessibleCountries = countries;
     
-        // If map view is active and enabled, update the map
+        updateCountDisplay(countries);
+        
         if (currentView === 'map' && isMapViewEnabled()) {
             if (mapView && mapView.map) {
                 mapView.updateData(accessibleCountries, currentTab);
@@ -281,7 +350,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        // Otherwise, display grid view
         const countriesForTab = accessibleCountries[currentTab];
 
         if (countriesForTab.length === 0) {
@@ -292,11 +360,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         resultsContainer.innerHTML = generateCountryGridHTML(countriesForTab);
     }
     
-    // Generate HTML for the country grid
     function generateCountryGridHTML(countriesForTab) {
         let html = '<div class="country-grid">';
 
-        // Add color-coded bar for each country based on its category
         countriesForTab.forEach(country => {
             let categoryClass = '';
             let accessType = '';
@@ -312,9 +378,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 accessType = 'eVisa';
             }
 
-            // Get the specific visa data entry for the country
             let visaInfo = null;
-            const passport = passportSelect.value;
+            const passport = selectedPassport;
             const passportData = visaDataFetcher.getVisaDataForPassport(passport);
 
             if (passportData && passportData[accessType]) {
@@ -324,7 +389,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
 
-            // Generate tooltip HTML
             const tooltipHTML = generateTooltipHTML(country, accessType, visaInfo);
 
             html += `
@@ -340,7 +404,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return html;
     }
     
-    // Generate tooltip HTML for a country
     function generateTooltipHTML(country, accessType, visaInfo) {
         let tooltipHTML = '<div class="country-tooltip">';
         tooltipHTML += `<p><span class="tooltip-label">Country:</span> ${country}</p>`;
@@ -362,20 +425,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         return tooltipHTML;
     }
     
-    // Reset results to initial state
     function resetResults() {
         accessibleCountries = {
             'visa-free': [],
             'visa-on-arrival': [],
             'e-visa': [],
-            'all': [] // Reset "All" category
+            'all': []
         };
         resultsContainer.innerHTML = '<p class="empty-state">Select your passport and visas to see available countries</p>';
     }
     
-    // Combined function to calculate and display results
     function calculateAndDisplayResults() {
-        if (!passportSelect.value) {
+        if (!selectedPassport) {
             resetResults();
             return;
         }
@@ -384,7 +445,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         displayResults(countries);
     }
     
-    // Tab switching
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -394,15 +454,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
-    // Add "All" tab to the results tabs
     function addAllTab() {
         const allTab = document.createElement('button');
-        allTab.className = 'tab-btn'; // Default inactive tab
+        allTab.className = 'tab-btn';
         allTab.dataset.type = 'all';
         allTab.textContent = 'All';
         document.querySelector('.results-tabs').prepend(allTab);
 
-        // Update tabButtons to include the new "All" tab
         const updatedTabButtons = document.querySelectorAll('.tab-btn');
         updatedTabButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -413,14 +471,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
 
-        // Set "All" as the default active tab
         allTab.click();
     }
 
-    // Call addAllTab after the DOM is ready
     addAllTab();
     
-    // View switching
     gridViewBtn.addEventListener('click', () => {
         gridViewBtn.classList.add('active');
         mapViewBtn.classList.remove('active');
@@ -431,7 +486,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     
     mapViewBtn.addEventListener('click', () => {
-        // Only allow map view if it's enabled
         if (!isMapViewEnabled()) {
             console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
             return;
