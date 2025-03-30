@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisaPower - Check Your Visa-Free Access</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&family=Montserrat:wght@400;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- Add jqvmap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/jqvmap.min.css">
+    <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%233498db' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E" type="image/svg+xml">
 </head> 
 <body>
     <div class="container">
         <header>
-            <h1>VisaPower</h1>
+            <h1><i class="fas fa-passport passport-icon"></i> VisaPower</h1>
             <p>Discover countries you can visit visa-free or with e-visa</p>
         </header>
 
         <main class="main-container">
             <div class="input-section">
                 <div class="input-group">
-                    <label for="passport-country">Your Passport Country</label>
+                    <label for="passport-country"><i class="fas fa-globe-americas"></i> Your Passport Country</label>
                     <select id="passport-country" required>
                         <option value="" disabled selected>Select your passport country</option>
                         <!-- Will be populated dynamically -->
@@ -27,7 +29,7 @@
                 </div> 
 
                 <div class="input-group">
-                    <label>Current Visas You Hold (if any)</label>
+                    <label><i class="fas fa-id-card"></i> Current Visas You Hold (if any)</label>
                     <div id="current-visas" class="checkbox-container">
                         <!-- Will be populated dynamically -->
                         <p class="select-passport-notice">Please select your passport country first</p>
@@ -37,10 +39,14 @@
 
             <div class="results-section">
                 <div class="results-header">
-                    <h2>Countries You Can Visit</h2>
+                    <h2><i class="fas fa-plane"></i> Countries You Can Visit</h2>
                     <div class="view-toggle">
-                        <button id="grid-view-btn" class="view-btn active">Grid View</button>
-                        <button id="map-view-btn" class="view-btn">Map View</button>
+                        <button id="grid-view-btn" class="view-btn active" title="Grid View">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button id="map-view-btn" class="view-btn" title="Map View">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </button>
                     </div>
                 </div>
                 
@@ -85,7 +91,10 @@
         </main>
 
         <footer>
-            <p>Disclaimer: Visa regulations change frequently. Always verify with official sources before travel.</p>
+            <p><i class="fas fa-info-circle"></i> Disclaimer: Visa regulations change frequently. Always verify with official sources before travel.</p>
+            <div class="footer-credits">
+                <p>Made with Care by <span class="author-name">shadowlanes</span> <a href="https://github.com/shadowlanes/visapower" class="github-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a></p>
+            </div>
         </footer>
     </div>
 

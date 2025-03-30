@@ -243,13 +243,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
          
         let html = '<div class="country-grid">';
-        countries.forEach(country => {
-            html += `
-                <div class="country-card">
-                    <span>${country}</span>
-                </div>
-            `;
-        });
+        
+        // Color code the cards based on their access type
+        if (currentTab === 'visa-free') {
+            countries.forEach(country => {
+                html += `
+                    <div class="country-card visa-free-card">
+                        <span>${country}</span>
+                    </div>
+                `;
+            });
+        } else if (currentTab === 'visa-on-arrival') {
+            countries.forEach(country => {
+                html += `
+                    <div class="country-card visa-on-arrival-card">
+                        <span>${country}</span>
+                    </div>
+                `;
+            });
+        } else if (currentTab === 'e-visa') {
+            countries.forEach(country => {
+                html += `
+                    <div class="country-card e-visa-card">
+                        <span>${country}</span>
+                    </div>
+                `;
+            });
+        }
+        
         html += '</div>';
         
         resultsContainer.innerHTML = html;
