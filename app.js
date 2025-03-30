@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Check if map view should be enabled
     function isMapViewEnabled() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('enabledMapView') === '1';
+        return urlParams.get('enableMapView') === '1';
     } 
     
     // Hide map view button if not enabled
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modify the initializeMapView function
     function initializeMapView() {
         if (!isMapViewEnabled()) {
-            console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
+            console.log('Map view is disabled. Add ?enableMapView=1 to URL to enable it.');
             return;
         }
         
