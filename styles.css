@@ -1,0 +1,347 @@
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2980b9;
+    --text-color: #333;
+    --background-color: #f5f7fa;
+    --card-color: #fff;
+    --border-color: #e0e0e0;
+    --success-color: #2ecc71;
+}
+ 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.input-section {
+    background-color: var(--card-color);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: white;
+}
+
+select[multiple] {
+    height: 150px;
+}
+
+small {
+    display: block;
+    margin-top: 0.5rem;
+    color: #666;
+}
+
+.btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: block;
+    width: 100%;
+    font-weight: 500;
+}
+
+.btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.results-section {
+    background-color: var(--card-color);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.results-section h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.results-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0.7;
+    position: relative;
+}
+
+.tab-btn.active {
+    opacity: 1;
+    font-weight: 500;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+.results-list {
+    min-height: 200px;
+}
+
+.country-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.country-card {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s;
+}
+
+.country-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    color: #666;
+    padding: 2rem 0;
+}
+ 
+.checkbox-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    background-color: white;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.checkbox-item:last-child {
+    margin-bottom: 0;
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.checkbox-item label {
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+  
+.search-box {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.select-passport-notice {
+    text-align: center;
+    color: #666;
+    padding: 10px;
+    font-style: italic;
+}
+
+.disabled-container {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+footer {
+    margin-top: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.results-header h2 {
+    margin-bottom: 0;
+    color: var(--primary-color);
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.view-btn {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.view-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-container {
+    position: relative;
+    min-height: 400px;
+}
+
+.view-content {
+    display: none;
+}
+
+.view-content.active {
+    display: block;
+}
+
+#world-map {
+    height: 400px;
+    background-color: #f0f0f0;
+}
+
+.map-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 0 10px 10px 0;
+}
+
+.color-box {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    border-radius: 2px;
+}
+
+.color-box.visa-free {
+    background-color: #2ecc71;
+}
+
+.color-box.visa-on-arrival {
+    background-color: #f39c12;
+}
+
+.color-box.e-visa {
+    background-color: #3498db;
+}
+
+.color-box.no-access {
+    background-color: #e0e0e0;
+}
+
+.jvectormap-tip {
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+}
+ 
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+     
+    .country-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .results-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .view-toggle {
+        width: 100%;
+    }
+    
+    .view-btn {
+        flex: 1;
+        text-align: center;
+    }
+}

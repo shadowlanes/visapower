@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisaPower - Check Your Visa-Free Access</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Add jVectorMap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.css">
+</head> 
+<body>
+    <div class="container">
+        <header>
+            <h1>VisaPower</h1>
+            <p>Discover countries you can visit visa-free or with e-visa</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="passport-country">Your Passport Country</label>
+                    <select id="passport-country" required>
+                        <option value="" disabled selected>Select your passport country</option>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Current Visas You Hold (if any)</label>
+                    <div id="current-visas" class="checkbox-container">
+                        <!-- Will be populated dynamically -->
+                        <p class="select-passport-notice">Please select your passport country first</p>
+                    </div>
+                </div>
+            </div>  
+
+            <div class="results-section">
+                <div class="results-header">
+                    <h2>Countries You Can Visit</h2>
+                    <div class="view-toggle">
+                        <button id="grid-view-btn" class="view-btn active">Grid View</button>
+                        <button id="map-view-btn" class="view-btn">Map View</button>
+                    </div>
+                </div>
+                
+                <div class="results-tabs">
+                    <button class="tab-btn active" data-type="visa-free">Visa-Free</button>
+                    <button class="tab-btn" data-type="visa-on-arrival">Visa on Arrival</button>
+                    <button class="tab-btn" data-type="e-visa">e-Visa</button>
+                </div>
+                
+                <div class="view-container">
+                    <!-- Grid view (default) -->
+                    <div id="grid-view" class="view-content active">
+                        <div id="results-container">
+                            <p class="empty-state">Select your passport and visas to see available countries</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Map view -->
+                    <div id="map-view" class="view-content">
+                        <div id="world-map"></div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <span class="color-box visa-free"></span>
+                                <span>Visa Free</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-box visa-on-arrival"></span>
+                                <span>Visa on Arrival</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-box e-visa"></span>
+                                <span>e-Visa</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-box no-access"></span>
+                                <span>No Access</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Disclaimer: Visa regulations change frequently. Always verify with official sources before travel.</p>
+        </footer>
+    </div>
+
+    <!-- jQuery is required for jVectorMap -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Wait for jQuery to load before loading jVectorMap -->
+    <script>
+        // Ensure jQuery is loaded before proceeding with other scripts
+        window.addEventListener('load', function() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery failed to load!');
+            } else {
+                console.log('jQuery loaded successfully');
+            }
+        });
+    </script>
+    
+    <!-- jVectorMap Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.js"></script>
+    <!-- World Map Data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap-world-mill.min.js"></script>
+    
+    <script src="visa-data.js"></script> 
+    <script src="map-view.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
