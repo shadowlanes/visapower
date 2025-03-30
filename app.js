@@ -89,12 +89,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         resultsContainer.innerHTML = `<p class="empty-state" style="color: #e74c3c;">${message}</p>`;
     }
     
-    // Check if map view should be enabled
+    // Simplify map view availability check to only consider screen size
     function isMapViewEnabled() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('enableMapView') === '1';
-    } 
-    
+        // Only enable map view on larger screens
+        return window.innerWidth > 768;
+    }
+
     // Hide map view button if not enabled
     if (!isMapViewEnabled()) {
         mapViewBtn.style.display = 'none';
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modify the initializeMapView function
     function initializeMapView() {
         if (!isMapViewEnabled()) {
-            console.log('Map view is disabled. Add ?enableMapView=1 to URL to enable it.');
+            console.log('Map view is disabled on smaller screens');
             return;
         }
         
@@ -121,6 +121,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     initializeMapView();
+
+    // Add resize event listener to switch to grid view if window is resized to be small
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768 && currentView === 'map') {
+            // Force switch to grid view on small screens
+            gridViewBtn.classList.add('active');
+            mapViewBtn.classList.remove('active');
+            gridViewContent.classList.add('active');
+            mapViewContent.classList.remove('active');
+            currentView = 'grid';
+            displayResults(accessibleCountries);
+        }
+    });
 
     // Update the country count display
     function updateCountDisplay(countries) {
@@ -540,7 +553,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     mapViewBtn.addEventListener('click', () => {
         if (!isMapViewEnabled()) {
-            console.log('Map view is disabled. Add ?enableMapView=1 to URL to enable it.');
+            console.log('Map view is disabled on smaller screens');
             return;
         }
         
