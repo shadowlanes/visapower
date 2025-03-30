@@ -1,21 +1,18 @@
 class VisaDataFetcher {
-    constructor(dataUrl) {
-        this.dataUrl = dataUrl;
-        this.visaData = null;
-    }
-
-    // Fetch visa data from the provided URL
-    async fetchVisaData() {
-        try {
-            const response = await fetch(this.dataUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch visa data: ${response.statusText}`);
-            }
-            this.visaData = await response.json();
-            console.log('Visa data fetched successfully');
-        } catch (error) {
-            console.error('Error fetching visa data:', error);
+    constructor() { 
+        // Try to get visaData from different possible sources
+        if (typeof window.visaData !== 'undefined') {
+            this.visaData = window.visaData;
+        } else if (typeof visaData !== 'undefined') {
+            // Maybe it's not attached to window but is in global scope
+            this.visaData = visaData;
+            // Also attach it to window for consistency
+            window.visaData = visaData;
+        } else {
+            console.error('visaData is not defined in any accessible scope. Check if data/visa-data.js is loaded properly.');
+            throw new Error('visaData is not defined in any accessible scope');
         }
+        console.log('VisaDataFetcher initialized with data:', !!this.visaData);
     }
 
     // Get visa data for a specific passport
@@ -38,6 +35,5 @@ class VisaDataFetcher {
 }
 
 // Example usage:
-// const visaDataFetcher = new VisaDataFetcher('data/visa-data.json');
-// await visaDataFetcher.fetchVisaData();
+// const visaDataFetcher = new VisaDataFetcher();
 // const indiaVisaData = visaDataFetcher.getVisaDataForPassport('India');

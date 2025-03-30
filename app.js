@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const passportSelect = document.getElementById('passport-country');
     const visasContainer = document.getElementById('current-visas');
     const resultsContainer = document.getElementById('results-container');
@@ -18,6 +18,24 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     let mapView;
+
+    // Initialize the visa data fetcher
+    let visaDataFetcher;
+    try {
+        visaDataFetcher = new VisaDataFetcher();
+    } catch (error) {
+        console.error('Failed to initialize VisaDataFetcher:', error);
+        showErrorMessage('Failed to initialize. Please try again later.');
+        return;
+    }
+    
+    // Initialize the app
+    populateCountryDropdowns();
+
+    // Show error message to user
+    function showErrorMessage(message) {
+        resultsContainer.innerHTML = `<p class="empty-state" style="color: #e74c3c;">${message}</p>`;
+    }
     
     // Check if map view should be enabled
     function isMapViewEnabled() {
@@ -54,11 +72,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Populate country dropdown selects
     function populateCountryDropdowns() {
         // Get unique list of countries from our data and filter out visa entries
+        const visaData = visaDataFetcher.visaData;
+        if (!visaData) {
+            console.error('Visa data not loaded');
+            return;
+        }
+
         const allCountries = [...new Set([
             ...Object.keys(visaData).filter(key => !key.endsWith(" Visa")),
             ...Object.values(visaData).flatMap(country => 
                 Object.values(country).flatMap(accessTypes => 
-                    Array.isArray(accessTypes) ? accessTypes : []
+                    Array.isArray(accessTypes) ? accessTypes.map(entry => entry.country) : []
                 )
             )
         ])].sort();
@@ -151,94 +175,104 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(checkbox => checkbox.value);
         
         // Reset results
-        accessibleCountries = {
+        const result = {
             'visa-free': [],
             'visa-on-arrival': [],
             'e-visa': [],
             'all': [] // Reset "All" category
         }; 
         
+        // Get data using the fetcher
+        const passportData = visaDataFetcher.getVisaDataForPassport(passport);
+        
         // First add countries accessible due to passport
-        if (visaData[passport]) {
-            if (visaData[passport].visaFree) {
-                accessibleCountries['visa-free'] = [...visaData[passport].visaFree];
+        if (passportData) {
+            if (passportData.visaFree) {
+                result['visa-free'] = passportData.visaFree.map(entry => entry.country);
             }
             
-            if (visaData[passport].visaOnArrival) {
-                accessibleCountries['visa-on-arrival'] = [...visaData[passport].visaOnArrival];
+            if (passportData.visaOnArrival) {
+                result['visa-on-arrival'] = passportData.visaOnArrival.map(entry => entry.country);
             }
             
-            if (visaData[passport].eVisa) {
-                accessibleCountries['e-visa'] = [...visaData[passport].eVisa];
+            if (passportData.eVisa) {
+                result['e-visa'] = passportData.eVisa.map(entry => entry.country);
             } 
             
             // Add passport-specific visa benefits if they exist
-            if (visaData[passport].additionalAccess) {
+            if (passportData.additionalAccess) {
                 visas.forEach(visa => {
-                    if (visaData[passport].additionalAccess[visa]) {
-                        const additionalAccess = visaData[passport].additionalAccess[visa];
+                    if (passportData.additionalAccess[visa]) {
+                        const additionalAccess = passportData.additionalAccess[visa];
                         
                         if (additionalAccess.visaFree && additionalAccess.visaFree.length > 0) {
-                            accessibleCountries['visa-free'] = [
-                                ...accessibleCountries['visa-free'],
-                                ...additionalAccess.visaFree
+                            result['visa-free'] = [
+                                ...result['visa-free'],
+                                ...additionalAccess.visaFree.map(entry => entry.country)
                             ];
                         }
                         
                         if (additionalAccess.visaOnArrival && additionalAccess.visaOnArrival.length > 0) {
-                            accessibleCountries['visa-on-arrival'] = [
-                                ...accessibleCountries['visa-on-arrival'],
-                                ...additionalAccess.visaOnArrival
+                            result['visa-on-arrival'] = [
+                                ...result['visa-on-arrival'],
+                                ...additionalAccess.visaOnArrival.map(entry => entry.country)
                             ];
                         }
                         
                         if (additionalAccess.eVisa && additionalAccess.eVisa.length > 0) {
-                            accessibleCountries['e-visa'] = [
-                                ...accessibleCountries['e-visa'],
-                                ...additionalAccess.eVisa
+                            result['e-visa'] = [
+                                ...result['e-visa'],
+                                ...additionalAccess.eVisa.map(entry => entry.country)
                             ];
                         }
                     }
                 });
             }
         }
-         
+        
         // Then add countries generally accessible with visas (regardless of passport)
         visas.forEach(visa => {
             const visaKey = visa + " Visa"; // Convert country name to visa key format
-            if (visaData[visaKey] && visaData[visaKey].visaFreeWithThisVisa) {
-                accessibleCountries['visa-free'] = [
-                    ...accessibleCountries['visa-free'],
-                    ...visaData[visaKey].visaFreeWithThisVisa
+            const visaData = visaDataFetcher.getGeneralVisaAccess(visaKey);
+            
+            if (visaData && visaData.visaFreeWithThisVisa) {
+                result['visa-free'] = [
+                    ...result['visa-free'],
+                    ...visaData.visaFreeWithThisVisa.map(entry => entry.country)
                 ];
             }
         }); 
         
         // Remove duplicates, invalid entries, and sort
         const validCountries = Object.keys(countryCodeMapping); // Use countryCodeMapping for validation
-        Object.keys(accessibleCountries).forEach(type => {
-            accessibleCountries[type] = [...new Set(accessibleCountries[type])]
+        Object.keys(result).forEach(type => {
+            result[type] = [...new Set(result[type])]
                 .filter(country => validCountries.includes(country)) // Filter valid countries
                 .sort();
         });
         
         // Remove passport country from results
-        Object.keys(accessibleCountries).forEach(type => {
-            accessibleCountries[type] = accessibleCountries[type].filter(country => country !== passport);
+        Object.keys(result).forEach(type => {
+            result[type] = result[type].filter(country => country !== passport);
         });
 
         // Populate "All" category with combined unique entries
-        accessibleCountries['all'] = [
+        result['all'] = [
             ...new Set([
-                ...accessibleCountries['visa-free'],
-                ...accessibleCountries['visa-on-arrival'],
-                ...accessibleCountries['e-visa']
+                ...result['visa-free'],
+                ...result['visa-on-arrival'],
+                ...result['e-visa']
             ])
         ].sort();
+        
+        return result;
     }
     
     // Display results based on currently selected tab and view
-    function displayResults() {
+    function displayResults(countries) {
+        // Store the results in the accessibleCountries global variable
+        accessibleCountries = countries;
+    
         // If map view is active and enabled, update the map
         if (currentView === 'map' && isMapViewEnabled()) {
             if (mapView && mapView.map) {
@@ -248,37 +282,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Otherwise, display grid view
-        const countries = accessibleCountries[currentTab];
+        const countriesForTab = accessibleCountries[currentTab];
 
-        if (countries.length === 0) {
+        if (countriesForTab.length === 0) {
             resultsContainer.innerHTML = '<p class="empty-state">No countries found for this category</p>';
             return;
         }
 
+        resultsContainer.innerHTML = generateCountryGridHTML(countriesForTab);
+    }
+    
+    // Generate HTML for the country grid
+    function generateCountryGridHTML(countriesForTab) {
         let html = '<div class="country-grid">';
 
         // Add color-coded bar for each country based on its category
-        countries.forEach(country => {
+        countriesForTab.forEach(country => {
             let categoryClass = '';
+            let accessType = '';
+
             if (accessibleCountries['visa-free'].includes(country)) {
                 categoryClass = 'visa-free-bar';
+                accessType = 'visaFree';
             } else if (accessibleCountries['visa-on-arrival'].includes(country)) {
                 categoryClass = 'visa-on-arrival-bar';
+                accessType = 'visaOnArrival';
             } else if (accessibleCountries['e-visa'].includes(country)) {
                 categoryClass = 'e-visa-bar';
+                accessType = 'eVisa';
             }
+
+            // Get the specific visa data entry for the country
+            let visaInfo = null;
+            const passport = passportSelect.value;
+            const passportData = visaDataFetcher.getVisaDataForPassport(passport);
+
+            if (passportData && passportData[accessType]) {
+                const entry = passportData[accessType].find(item => item.country === country);
+                if (entry) {
+                    visaInfo = entry;
+                }
+            }
+
+            // Generate tooltip HTML
+            const tooltipHTML = generateTooltipHTML(country, accessType, visaInfo);
 
             html += `
                 <div class="country-card">
                     <span class="country-bar ${categoryClass}"></span>
                     <span>${country}</span>
+                    ${tooltipHTML}
                 </div>
             `;
         });
 
         html += '</div>';
-
-        resultsContainer.innerHTML = html;
+        return html;
+    }
+    
+    // Generate tooltip HTML for a country
+    function generateTooltipHTML(country, accessType, visaInfo) {
+        let tooltipHTML = '<div class="country-tooltip">';
+        tooltipHTML += `<p><span class="tooltip-label">Country:</span> ${country}</p>`;
+        
+        if (visaInfo) {
+            let accessTypeText = '';
+            if (accessType === 'visaFree') accessTypeText = 'Visa Free';
+            else if (accessType === 'visaOnArrival') accessTypeText = 'Visa on Arrival';
+            else if (accessType === 'eVisa') accessTypeText = 'e-Visa Required';
+            
+            tooltipHTML += `<p><span class="tooltip-label">Access Type:</span> ${accessTypeText}</p>`;
+            tooltipHTML += `<p><span class="tooltip-label">Source:</span> <a href="${visaInfo.source}" target="_blank" rel="noopener noreferrer">${visaInfo.source.replace(/^https?:\/\//i, '')}</a></p>`;
+            tooltipHTML += `<p><span class="tooltip-label">Last Checked:</span> ${visaInfo.lastChecked}</p>`;
+        } else {
+            tooltipHTML += '<p>No detailed information available</p>';
+        }
+        
+        tooltipHTML += '</div>';
+        return tooltipHTML;
     }
     
     // Reset results to initial state
@@ -299,8 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        calculateAccessibleCountries();
-        displayResults();
+        const countries = calculateAccessibleCountries();
+        displayResults(countries);
     }
     
     // Tab switching
@@ -309,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             currentTab = button.dataset.type;
-            displayResults();
+            displayResults(accessibleCountries);
         });
     });
 
@@ -328,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatedTabButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 currentTab = button.dataset.type;
-                displayResults();
+                displayResults(accessibleCountries);
             });
         });
 
@@ -346,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gridViewContent.classList.add('active');
         mapViewContent.classList.remove('active');
         currentView = 'grid';
-        displayResults();
+        displayResults(accessibleCountries);
     });
     
     mapViewBtn.addEventListener('click', () => {
@@ -361,9 +442,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mapViewContent.classList.add('active');
         gridViewContent.classList.remove('active');
         currentView = 'map';
-        displayResults();
+        displayResults(accessibleCountries);
     });
-    
-    // Initialize the app
-    populateCountryDropdowns();
 });

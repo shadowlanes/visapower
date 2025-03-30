@@ -503,6 +503,57 @@ select:hover, select:focus {
     font-weight: 500;
 }
 
+/* Country card tooltip */
+.country-card {
+    position: relative;
+}
+
+.country-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(45, 55, 72, 0.95);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    width: 220px;
+    z-index: 100;
+    font-family: 'Quicksand', sans-serif;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.country-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: rgba(45, 55, 72, 0.95) transparent transparent transparent;
+}
+
+.country-tooltip p {
+    margin: 5px 0;
+    white-space: normal;
+}
+
+.country-tooltip .tooltip-label {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.country-card:hover .country-tooltip {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
 /* Color coded cards */
 .visa-free-card {
     background-color: rgba(72, 187, 120, 0.1);
