@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     const gridViewContent = document.getElementById('grid-view');
     const mapViewContent = document.getElementById('map-view');
     
+    // Function to convert country code to flag emoji
+    function getFlagEmoji(countryCode) {
+        if (!countryCode) return '';
+        // For each letter in the country code, get the corresponding regional indicator symbol
+        // Regional indicator symbols start at U+1F1E6 for 'A' (ASCII 65)
+        const codePoints = [...countryCode.toUpperCase()].map(
+            char => 127397 + char.charCodeAt(0)
+        );
+        // Convert code points to emoji
+        return String.fromCodePoint(...codePoints);
+    }
+    
     // Create elements for the new passport search container
     const passportSelectContainer = passportSelect.parentElement;
     const passportSearchContainer = document.createElement('div');
@@ -28,8 +40,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     passportSearchContainer.appendChild(passportResults);
     passportSelectContainer.replaceChild(passportSearchContainer, passportSelect);
     
-    // Set default passport country to India
-    passportSearch.value = 'India';
+    // Set default passport country to India with flag
+    const indiaCode = countryCodeMapping['India'];
+    const indiaFlag = getFlagEmoji(indiaCode);
+    passportSearch.value = `${indiaFlag} India`;
     selectedPassport = 'India';
     
     // Remove disabled class from visas container if it exists
@@ -136,8 +150,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             )
         ])].sort();
 
+        // If a search term exists, filter by country name without the flag
         const filteredCountries = searchTerm 
-            ? allCountries.filter(country => country.toLowerCase().includes(searchTerm.toLowerCase()))
+            ? allCountries.filter(country => {
+                // Remove any existing flag emoji from the search term for comparison
+                const cleanSearchTerm = searchTerm.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF] /g, '');
+                return country.toLowerCase().includes(cleanSearchTerm.toLowerCase());
+              })
             : allCountries;
         
         passportResults.innerHTML = '';
@@ -150,10 +169,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         filteredCountries.forEach(country => {
             const countryItem = document.createElement('div');
             countryItem.className = 'passport-country-item';
-            countryItem.textContent = country;
+            
+            // Add flag emoji before the country name
+            const countryCode = countryCodeMapping[country];
+            const flagEmoji = getFlagEmoji(countryCode);
+            countryItem.textContent = `${flagEmoji} ${country}`;
+            
             countryItem.addEventListener('click', () => {
                 selectedPassport = country;
-                passportSearch.value = country;
+                // Set the search input value with the flag
+                passportSearch.value = `${flagEmoji} ${country}`;
                 passportResults.style.display = 'none';
                 
                 visasContainer.classList.remove('disabled-container');
@@ -199,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         populatePassportResults();
     }
 
+    // Add flags to visa checkboxes as well
     function populateVisas() {
         while (visasContainer.firstChild) {
             visasContainer.removeChild(visasContainer.firstChild);
@@ -228,7 +254,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             const label = document.createElement('label');
             label.htmlFor = checkbox.id;
-            label.textContent = country;
+            
+            // Add flag emoji to visa checkbox label
+            const countryCode = countryCodeMapping[country];
+            const flagEmoji = getFlagEmoji(countryCode);
+            label.textContent = `${flagEmoji} ${country}`;
             
             checkboxItem.appendChild(checkbox);
             checkboxItem.appendChild(label);
