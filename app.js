@@ -18,8 +18,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let mapView;
     
-    // Initialize map view only when dependencies are loaded
+    // Check if map view should be enabled
+    function isMapViewEnabled() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('enabledMapView') === '1';
+    }
+    
+    // Hide map view button if not enabled
+    if (!isMapViewEnabled()) {
+        mapViewBtn.style.display = 'none';
+    }
+    
+    // Initialize map view only when dependencies are loaded and view is enabled
     function initializeMapView() {
+        // Only initialize if map view is enabled
+        if (!isMapViewEnabled()) {
+            console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
+            return;
+        }
+        
         // Check if jQuery and jVectorMap are available before initializing
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.vectorMap !== 'undefined') {
             console.log('Initializing map view...');
@@ -208,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Display results based on currently selected tab and view
     function displayResults() {
-        // If map view is active, update the map
-        if (currentView === 'map') {
+        // If map view is active and enabled, update the map
+        if (currentView === 'map' && isMapViewEnabled()) {
             // Only update map if it's initialized
             if (mapView && mapView.map) {
                 mapView.updateData(accessibleCountries, currentTab);
@@ -280,6 +297,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     mapViewBtn.addEventListener('click', () => {
+        // Only allow map view if it's enabled
+        if (!isMapViewEnabled()) {
+            console.log('Map view is disabled. Add ?enabledMapView=1 to URL to enable it.');
+            return;
+        }
+        
         mapViewBtn.classList.add('active');
         gridViewBtn.classList.remove('active');
         mapViewContent.classList.add('active');

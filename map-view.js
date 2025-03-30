@@ -18,43 +18,27 @@ class MapView {
             'no-access': '#e0e0e0'        // Light gray
         };
         
-        // Initialize map on next tick to ensure DOM and libraries are fully loaded
-        setTimeout(() => this.init(), 0);
+        this.init();
     }
     
-    init() { 
+    init() {
         try {
-            // Check if jQuery and jVectorMap are available
-            if (typeof jQuery === 'undefined' || typeof jQuery.fn.vectorMap === 'undefined') {
-                console.error('jQuery or jVectorMap not loaded. Retrying in 500ms...');
-                setTimeout(() => this.init(), 500);
-                return;
-            }
-            
-            // Initialize the map
-            this.map = jQuery(this.mapElementId).vectorMap({
-                map: 'world_mill',
+            // Initialize the map using jqvmap
+            $(this.mapElementId).vectorMap({
+                map: 'world_en',
                 backgroundColor: '#f8f9fa',
-                zoomOnScroll: true,
-                zoomMax: 10,
-                zoomMin: 1,
-                regionsSelectable: false,
-                regionStyle: {
-                    initial: {
-                        fill: this.colors['no-access'],
-                        "fill-opacity": 1,
-                        stroke: 'none',
-                        "stroke-width": 0,
-                        "stroke-opacity": 1
-                    },
-                    hover: {
-                        "fill-opacity": 0.8,
-                        cursor: 'pointer'
-                    }
-                },
+                borderColor: '#ffffff',
+                borderOpacity: 0.25,
+                borderWidth: 1,
+                color: this.colors['no-access'],
+                hoverOpacity: 0.7,
+                selectedColor: '#666666',
+                enableZoom: true,
+                showTooltip: true,
                 onRegionTipShow: (e, el, code) => this.showTooltip(e, el, code)
-            }).vectorMap('get', 'mapObject');
+            });
             
+            this.map = $(this.mapElementId).vectorMap('get', 'mapObject');
             console.log('Map initialized successfully');
         } catch (error) {
             console.error('Error initializing map:', error);
@@ -65,17 +49,6 @@ class MapView {
     updateData(accessibleCountries, currentTab) {
         this.accessibleCountries = accessibleCountries;
         this.currentTab = currentTab;
-        
-        // Only proceed if map is initialized
-        if (!this.map) {
-            console.warn('Map not yet initialized, trying again...');
-            setTimeout(() => {
-                this.init();
-                this.updateData(accessibleCountries, currentTab);
-            }, 500);
-            return;
-        }
-        
         this.updateCountryAccessMap();
         this.updateMapColors();
     }
@@ -111,13 +84,13 @@ class MapView {
     
     // Update map colors based on the current tab
     updateMapColors() {
-        if (!this.map || !this.map.series || !this.map.series.regions || !this.map.series.regions[0]) {
+        if (!this.map) {
             console.warn('Map not fully initialized, cannot set colors');
             return;
         }
-        
+
         const colors = {};
-        
+
         // Set colors based on the currently active tab
         Object.keys(this.countryAccessMap).forEach(countryCode => {
             const accessType = this.countryAccessMap[countryCode];
@@ -132,10 +105,10 @@ class MapView {
                 colors[countryCode] = this.colors['no-access'];
             }
         });
-        
+
         try {
-            // Update the map colors
-            this.map.series.regions[0].setValues(colors);
+            // Update the map colors using the correct jQVMap API method
+            $(this.mapElementId).vectorMap('set', 'colors', colors);
         } catch (error) {
             console.error('Error updating map colors:', error);
         }
@@ -162,67 +135,10 @@ class MapView {
         }
         
         el.html(`${countryName}: ${accessText}`);
-    } 
+    }
     
     // Helper function to convert country names to country codes
     getCountryCode(countryName) {
-        // This is a basic mapping function. You would need a more complete mapping
-        // for production use. This is just a starting point.
-        const countryMapping = {
-            'United States': 'us',
-            'Canada': 'ca',
-            'Mexico': 'mx',
-            'United Kingdom': 'gb',
-            'France': 'fr',
-            'Germany': 'de',
-            'Italy': 'it',
-            'Spain': 'es',
-            'Japan': 'jp',
-            'South Korea': 'kr',
-            'Singapore': 'sg',
-            'Australia': 'au',
-            'New Zealand': 'nz',
-            'Egypt': 'eg',
-            'Kenya': 'ke',
-            'Maldives': 'mv',
-            'Nepal': 'np',
-            'Thailand': 'th',
-            'India': 'in',
-            'Vietnam': 'vn',
-            'Sri Lanka': 'lk',
-            'Turkey': 'tr',
-            'China': 'cn',
-            'Russia': 'ru',
-            'Brazil': 'br',
-            'Argentina': 'ar',
-            'South Africa': 'za',
-            'Nigeria': 'ng',
-            'Indonesia': 'id',
-            'Malaysia': 'my',
-            'Philippines': 'ph',
-            'Bhutan': 'bt',
-            'Mauritius': 'mu',
-            'Cambodia': 'kh',
-            'Laos': 'la',
-            'Myanmar': 'mm',
-            'Panama': 'pa',
-            'Costa Rica': 'cr',
-            'United Arab Emirates': 'ae',
-            'Georgia': 'ge',
-            'Azerbaijan': 'az',
-            'Taiwan': 'tw',
-            'Bahrain': 'bh',
-            'Albania': 'al',
-            'Montenegro': 'me',
-            'Ireland': 'ie',
-            'Bulgaria': 'bg',
-            'Croatia': 'hr',
-            'Cyprus': 'cy',
-            'Romania': 'ro',
-            'Portugal': 'pt'
-            // Add more countries as needed
-        };
-        
-        return countryMapping[countryName];
+        return countryCodeMapping[countryName];
     }
 }

@@ -6,8 +6,8 @@
     <title>VisaPower - Check Your Visa-Free Access</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Add jVectorMap CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.css">
+    <!-- Add jqvmap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/jqvmap.min.css">
 </head> 
 <body>
     <div class="container">
@@ -89,27 +89,17 @@
         </footer>
     </div>
 
-    <!-- jQuery is required for jVectorMap -->
+    <!-- jQuery is required for jqvmap -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- Wait for jQuery to load before loading jVectorMap -->
-    <script>
-        // Ensure jQuery is loaded before proceeding with other scripts
-        window.addEventListener('load', function() {
-            if (typeof jQuery === 'undefined') {
-                console.error('jQuery failed to load!');
-            } else {
-                console.log('jQuery loaded successfully');
-            }
-        });
-    </script>
+    <!-- jqvmap Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/jquery.vmap.min.js"></script>
+    <!-- jqvmap World Map Data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/maps/jquery.vmap.world.js"></script>
     
-    <!-- jVectorMap Core -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.js"></script>
-    <!-- World Map Data -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap-world-mill.min.js"></script>
-    
-    <script src="visa-data.js"></script> 
+    <!-- Updated paths to data files -->
+    <script src="data/visa-data.js"></script>
+    <script src="data/country-codes.js"></script>
     <script src="map-view.js"></script>
     <script src="app.js"></script>
 </body>
