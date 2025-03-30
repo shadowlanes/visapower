@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error('Visa data not loaded');
             return;
         }
-
+ 
         const allCountries = [...new Set([
             ...Object.keys(visaData).filter(key => !key.endsWith(" Visa")),
             ...Object.values(visaData).flatMap(country => 
@@ -192,15 +192,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             visasContainer.removeChild(visasContainer.firstChild);
         }
         
-        const visaData = visaDataFetcher.visaData;
-        const allCountries = [...new Set([
-            ...Object.keys(visaData).filter(key => !key.endsWith(" Visa")),
-            ...Object.values(visaData).flatMap(country => 
-                Object.values(country).flatMap(accessTypes => 
-                    Array.isArray(accessTypes) ? accessTypes.map(entry => entry.country) : []
-                )
-            )
-        ])].sort();
+        // Get countries directly from countryCodeMapping instead of visaData
+        const allCountries = Object.keys(countryCodeMapping).sort();
         
         const searchBox = document.createElement('input');
         searchBox.type = 'text';
