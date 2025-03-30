@@ -39,7 +39,13 @@
 
             <div class="results-section">
                 <div class="results-header">
-                    <h2><i class="fas fa-plane"></i> Countries You Can Visit</h2>
+                    <h2>
+                        <i class="fas fa-plane"></i> Countries You Can Visit
+                        <span class="disclaimer-tooltip">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">Visa regulations change frequently. Always verify with official sources before travel.</span>
+                        </span>
+                    </h2>
                     <div class="view-toggle">
                         <button id="grid-view-btn" class="view-btn active" title="Grid View">
                             <i class="fas fa-th"></i>
@@ -90,10 +96,17 @@
             </div>
         </main>
 
-        <footer>
-            <p><i class="fas fa-info-circle"></i> Disclaimer: Visa regulations change frequently. Always verify with official sources before travel.</p>
-            <div class="footer-credits">
-                <p>Made with Care by <span class="author-name">shadowlanes</span> <a href="https://github.com/shadowlanes/visapower" class="github-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a></p>
+        <footer class="simplified-footer">
+            <div class="footer-left">
+                <p>&copy; 2023 VisaPower. All rights reserved.</p>
+            </div>
+            <div class="footer-center">
+                <p>Made with <i class="fas fa-heart"></i> by <span class="author-name">shadowlanes</span></p>
+            </div>
+            <div class="footer-right">
+                <a href="https://github.com/shadowlanes/visapower" class="github-link" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-github"></i>
+                </a>
             </div>
         </footer>
     </div>
