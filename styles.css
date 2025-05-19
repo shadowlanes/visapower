@@ -468,15 +468,25 @@ select:hover, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.search-tab-btn:hover {
-    opacity: 1;
+    /* Ensure the button captures all clicks */
+    position: relative;
+    z-index: 2;
 }
 
 .search-tab-btn i {
     font-size: 1.1rem;
+    /* Make sure the icon doesn't interfere with clicks */
+    pointer-events: none;
 }
+
+/* When debugging shows that we need pointer-events for the icon */
+/* Uncomment this if the fix above doesn't work
+.search-tab-btn i {
+    font-size: 1.1rem;
+    position: relative;
+    z-index: 3;
+}
+*/
 
 /* Search button tooltip on hover */
 .search-tab-btn:hover::after {
