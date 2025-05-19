@@ -80,6 +80,13 @@
                     <button id="search-countries-btn" class="search-tab-btn" title="Search Countries">
                         <i class="fas fa-search"></i>
                     </button>
+                    <!-- Add search input that will replace tabs when active -->
+                    <div class="inline-search-container">
+                        <input type="text" id="inline-country-search" placeholder="Search countries...">
+                        <button id="close-inline-search-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="view-container">
@@ -183,15 +190,5 @@
             */
         });
     </script>
-
-    <!-- Add search overlay HTML -->
-    <div id="search-overlay" class="search-overlay">
-        <div class="search-container">
-            <input type="text" id="country-search" placeholder="Search countries...">
-            <button id="close-search-btn">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
 </body>
 </html>

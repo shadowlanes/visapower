@@ -8,12 +8,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     const gridViewContent = document.getElementById('grid-view');
     const mapViewContent = document.getElementById('map-view');
     const searchBtn = document.getElementById('search-countries-btn');
-    const searchOverlay = document.getElementById('search-overlay');
-    const countrySearch = document.getElementById('country-search');
-    const closeSearchBtn = document.getElementById('close-search-btn');
+    
+    // Replace overlay search with inline search
+    const resultsTabsContainer = document.querySelector('.results-tabs');
+    const inlineSearchContainer = document.querySelector('.inline-search-container');
+    const inlineCountrySearch = document.getElementById('inline-country-search');
+    const closeInlineSearchBtn = document.getElementById('close-inline-search-btn');
     
     // Let's track the search term globally
     let currentSearchTerm = '';
+    // Track which tab was active before search
+    let lastActiveTab = 'all';
     
     // Function to convert country code to flag emoji
     function getFlagEmoji(countryCode) {
@@ -592,31 +597,66 @@ document.addEventListener('DOMContentLoaded', async function() {
         displayResults(accessibleCountries);
     });
     
-    // Add search functionality
+    // Add inline search functionality
     searchBtn.addEventListener('click', () => {
-        searchOverlay.classList.add('active');
-        countrySearch.focus();
-        countrySearch.value = currentSearchTerm; // Restore previous search if any
+        // Store the current active tab
+        lastActiveTab = currentTab;
+        
+        // Hide tabs and search button, show search input
+        resultsTabsContainer.classList.add('search-active');
+        inlineSearchContainer.classList.add('active');
+        inlineCountrySearch.focus();
+        
+        // Set search value to current search term if any
+        inlineCountrySearch.value = currentSearchTerm;
     });
     
-    closeSearchBtn.addEventListener('click', () => {
-        searchOverlay.classList.remove('active');
-    });
+    // Close inline search
+    function closeInlineSearch() {
+        // Hide search input, show tabs
+        resultsTabsContainer.classList.remove('search-active');
+        inlineSearchContainer.classList.remove('active');
+        
+        // Restore the active tab that was selected before searching
+        if (lastActiveTab) {
+            const tabToActivate = document.querySelector(`.tab-btn[data-type="${lastActiveTab}"]`);
+            if (tabToActivate) {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabToActivate.classList.add('active');
+                currentTab = lastActiveTab;
+                displayResults(accessibleCountries);
+            }
+        }
+    }
+    
+    closeInlineSearchBtn.addEventListener('click', closeInlineSearch);
     
     // Close search on escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
-            searchOverlay.classList.remove('active');
+        if (e.key === 'Escape' && inlineSearchContainer.classList.contains('active')) {
+            closeInlineSearch();
         }
     });
     
-    // Perform search as user types
-    countrySearch.addEventListener('input', () => {
-        currentSearchTerm = countrySearch.value.trim().toLowerCase();
-        performSearch(currentSearchTerm);
+    // Close search when clicking outside
+    document.addEventListener('click', (e) => {
+        if (inlineSearchContainer.classList.contains('active') && 
+            !inlineSearchContainer.contains(e.target) && 
+            e.target !== searchBtn) {
+            closeInlineSearch();
+        }
     });
     
+    // Perform search as user types in the inline search
+    inlineCountrySearch.addEventListener('input', () => {
+        const searchTerm = inlineCountrySearch.value.trim().toLowerCase();
+        performSearch(searchTerm);
+    });
+    
+    // Update the function references to use inline search instead of overlay
     function performSearch(searchTerm) {
+        currentSearchTerm = searchTerm;
+        
         if (currentView === 'grid') {
             searchInGridView(searchTerm);
         } else if (currentView === 'map') {
@@ -625,52 +665,123 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     function searchInGridView(searchTerm) {
-        const countryCards = resultsContainer.querySelectorAll('.country-card');
+        if (!searchTerm) {
+            // If search term is empty, reset to the original display order
+            displayResults(accessibleCountries);
+            return;
+        }
         
-        // Reset all highlights first
-        countryCards.forEach(card => {
-            card.classList.remove('country-highlight');
-        });
-        
-        if (!searchTerm) return; // Exit if search is empty
-        
-        // Apply highlights to matching countries
-        countryCards.forEach(card => {
-            const countryName = card.querySelector('span').textContent.toLowerCase();
-            if (countryName.includes(searchTerm)) {
-                card.classList.add('country-highlight');
-            }
-        });
-    }
-    
-    function searchInMapView(searchTerm) {
-        if (!mapView || !mapView.initialized) return;
-        
-        // Get all countries in the current tab
+        // Get the countries for the current tab
         const countriesForTab = accessibleCountries[currentTab];
         
-        // Reset all highlights first
-        mapView.resetHighlights();
+        if (countriesForTab.length === 0) {
+            return;
+        }
         
-        if (!searchTerm) return; // Exit if search is empty
+        // Create a new array for sorting countries by match
+        const sortedCountries = [...countriesForTab].sort((a, b) => {
+            const aContains = a.toLowerCase().includes(searchTerm.toLowerCase());
+            const bContains = b.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            if (aContains && !bContains) return -1;
+            if (!aContains && bContains) return 1;
+            return a.localeCompare(b);
+        });
         
-        // Find matching countries
-        const matchingCountries = countriesForTab.filter(country => 
-            country.toLowerCase().includes(searchTerm)
-        );
-        
-        // Highlight matching countries on map
-        mapView.highlightCountries(matchingCountries);
+        // Generate new HTML with reordered countries and highlighting
+        resultsContainer.innerHTML = generateSearchResultsHTML(sortedCountries, searchTerm);
     }
 
-    // Update the display results function to account for search term
-    const originalDisplayResults = displayResults;
-    displayResults = function(countries) {
-        originalDisplayResults(countries);
+    function generateSearchResultsHTML(countriesForTab, searchTerm) {
+        let html = '<div class="country-grid">';
+
+        countriesForTab.forEach(country => {
+            let categoryClass = '';
+            let accessType = '';
+
+            if (accessibleCountries['visa-free'].includes(country)) {
+                categoryClass = 'visa-free-bar';
+                accessType = 'visaFree';
+            } else if (accessibleCountries['visa-on-arrival'].includes(country)) {
+                categoryClass = 'visa-on-arrival-bar';
+                accessType = 'visaOnArrival';
+            } else if (accessibleCountries['e-visa'].includes(country)) { 
+                categoryClass = 'e-visa-bar';
+                accessType = 'eVisa';
+            }
+
+            let visaInfo = null;
+            const passport = selectedPassport;
+            const passportData = visaDataFetcher.getVisaDataForPassport(passport);
+
+            if (passportData && passportData[accessType]) {
+                const entry = passportData[accessType].find(item => item.country === country);
+                if (entry) {
+                    visaInfo = entry;
+                }
+            }
+
+            const tooltipHTML = generateTooltipHTML(country, accessType, visaInfo);
+            
+            // Add flag background using country code
+            const countryCode = countryCodeMapping[country];
+            const flagStyle = countryCode ? `style="--flag-url: url('https://flagcdn.com/${countryCode}.svg');"` : '';
+
+            // Check if the country name contains the search term
+            const countryNameLower = country.toLowerCase();
+            const searchTermLower = searchTerm.toLowerCase();
+            const isMatch = countryNameLower.includes(searchTermLower);
+            const highlightClass = isMatch ? 'country-highlight' : '';
+            
+            // Create highlighted country name with search term underlined
+            let countryNameHTML = country;
+            if (isMatch) {
+                const startIndex = countryNameLower.indexOf(searchTermLower);
+                const endIndex = startIndex + searchTerm.length;
+                countryNameHTML = 
+                    country.substring(0, startIndex) +
+                    `<span class="match">${country.substring(startIndex, endIndex)}</span>` +
+                    country.substring(endIndex);
+            }
+
+            html += `
+                <div class="country-card with-flag-bg ${highlightClass} ${categoryClass ? categoryClass.replace('-bar', '-card') : ''}" ${flagStyle}>
+                    <span>${countryNameHTML}</span>
+                    ${tooltipHTML}
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    // Modify the tab button click event to respect search results
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentTab = button.dataset.type;
+            
+            // Display results and reapply search if there is an active search term
+            displayResults(accessibleCountries);
+            if (currentSearchTerm) {
+                performSearch(currentSearchTerm);
+            }
+        });
+    });
+
+    // Update grid/map view switchers to maintain search results
+    gridViewBtn.addEventListener('click', () => {
+        gridViewBtn.classList.add('active');
+        mapViewBtn.classList.remove('active');
+        gridViewContent.classList.add('active');
+        mapViewContent.classList.remove('active');
+        currentView = 'grid';
         
-        // Re-apply search highlighting if there's an active search
+        displayResults(accessibleCountries);
         if (currentSearchTerm) {
             performSearch(currentSearchTerm);
         }
-    };
+    });
 });
