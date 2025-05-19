@@ -77,6 +77,9 @@
                     <button class="tab-btn active" data-type="visa-free">Visa-Free</button>
                     <button class="tab-btn" data-type="visa-on-arrival">Visa on Arrival</button>
                     <button class="tab-btn" data-type="e-visa">e-Visa</button>
+                    <button id="search-countries-btn" class="search-tab-btn" title="Search Countries">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
                 
                 <div class="view-container">
@@ -167,7 +170,7 @@
             /* 
             fetch('https://ipapi.co/json/')
                 .then(response => response.json())
-                .then(data => {
+                .then data => {
                     const countryCode = data.country_code.toLowerCase();
 
                     // Auto-select the country if it exists in the dropdown
@@ -180,5 +183,15 @@
             */
         });
     </script>
+
+    <!-- Add search overlay HTML -->
+    <div id="search-overlay" class="search-overlay">
+        <div class="search-container">
+            <input type="text" id="country-search" placeholder="Search countries...">
+            <button id="close-search-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
 </body>
 </html>
