@@ -604,8 +604,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         displayResults(accessibleCountries);
     });
     
-    // Add inline search functionality
-    searchBtn.addEventListener('click', () => {
+    // Add inline search functionality - Fix the event handling for the search button
+    searchBtn.addEventListener('click', function(e) {
+        // Prevent any potential bubbling issues
+        e.stopPropagation();
+        
         // Store the current active tab
         lastActiveTab = currentTab;
         
@@ -618,6 +621,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         inlineCountrySearch.value = currentSearchTerm;
     });
     
+    // Fix the issue with clicking on the icon within the button
+    // Add a separate event listener for the icon inside the button
+    const searchBtnIcon = searchBtn.querySelector('i');
+    if (searchBtnIcon) {
+        searchBtnIcon.addEventListener('click', function(e) {
+            // Stop propagation to prevent this click from bubbling
+            e.stopPropagation();
+            
+            // Manually trigger a click on the parent button
+            searchBtn.click();
+        });
+    }
+
     // Close inline search
     function closeInlineSearch() {
         // Hide search input, show tabs
