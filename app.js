@@ -148,8 +148,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // Update the country count display
-    function updateCountDisplay(countries) {
+    // Update the country count display to include search result information
+    function updateCountDisplay(countries, matchedCount = null) {
         if (!countries || !countries[currentTab]) {
             countDisplay.textContent = 'No countries found';
             return;
@@ -160,7 +160,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                             currentTab === 'visa-free' ? 'Visa-Free' :
                             currentTab === 'visa-on-arrival' ? 'Visa on Arrival' : 'e-Visa';
         
-        countDisplay.textContent = `${count} ${categoryName} ${count === 1 ? 'Country' : 'Countries'} Available`;
+        let displayText = `${count} ${categoryName} ${count === 1 ? 'Country' : 'Countries'} Available`;
+        
+        // If we have search results, add the count of matched countries
+        if (matchedCount !== null) {
+            displayText += ` (${matchedCount} ${matchedCount === 1 ? 'country' : 'countries'} matched)`;
+        }
+        
+        countDisplay.textContent = displayText;
     }
 
     // Populate passport search results
@@ -617,6 +624,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         resultsTabsContainer.classList.remove('search-active');
         inlineSearchContainer.classList.remove('active');
         
+        // Reset the search term
+        currentSearchTerm = '';
+        
+        // Reset the count display to show without matches
+        updateCountDisplay(accessibleCountries);
+        
         // Restore the active tab that was selected before searching
         if (lastActiveTab) {
             const tabToActivate = document.querySelector(`.tab-btn[data-type="${lastActiveTab}"]`);
@@ -687,6 +700,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (!aContains && bContains) return 1;
             return a.localeCompare(b);
         });
+        
+        // Count how many countries matched the search term
+        const matchCount = sortedCountries.filter(country => 
+            country.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length;
+        
+        // Update the count display to show the match count
+        updateCountDisplay(accessibleCountries, matchCount);
         
         // Generate new HTML with reordered countries and highlighting
         resultsContainer.innerHTML = generateSearchResultsHTML(sortedCountries, searchTerm);
