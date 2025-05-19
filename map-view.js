@@ -9,6 +9,7 @@ class MapView {
         this.countryAccessMap = {};
         this.currentTab = 'visa-free';
         this.initialized = false;
+        this.highlightedCountries = [];
         
         // Define colors for different access types
         this.colors = {
@@ -131,7 +132,87 @@ class MapView {
         return this.countryAccessMap;
     }
     
-    // Update map colors based on the current tab
+    // Reset all highlighted countries
+    resetHighlights() {
+        if (!this.initialized || !this.highlightedCountries.length) return;
+        
+        try {
+            // Remove custom styles from previously highlighted countries
+            const mapObject = $(this.mapElementId).vectorMap('get', 'mapObject');
+            
+            this.highlightedCountries.forEach(country => {
+                const countryCode = this.getCountryCode(country);
+                if (!countryCode) return;
+                
+                // Reset the country to its original color based on access type
+                const accessType = this.countryAccessMap[countryCode] || 'no-access';
+                const color = this.colors[accessType];
+                
+                // Update the country color
+                if (mapObject && mapObject.regions[countryCode]) {
+                    mapObject.regions[countryCode].element.setStyle('fill', color);
+                    
+                    // Reset any custom stroke
+                    mapObject.regions[countryCode].element.setStyle('stroke', '#ffffff');
+                    mapObject.regions[countryCode].element.setStyle('stroke-width', 1);
+                }
+            });
+            
+            // Clear the list of highlighted countries
+            this.highlightedCountries = [];
+        } catch (error) {
+            console.error('Error resetting map highlights:', error);
+        }
+    }
+    
+    // Highlight specific countries on the map
+    highlightCountries(countries) {
+        if (!this.initialized) return;
+        
+        try {
+            const mapObject = $(this.mapElementId).vectorMap('get', 'mapObject');
+            
+            countries.forEach(country => {
+                const countryCode = this.getCountryCode(country);
+                if (!countryCode || !mapObject.regions[countryCode]) return;
+                
+                // Add visual highlighting to the country
+                mapObject.regions[countryCode].element.setStyle('stroke', '#FFC107');
+                mapObject.regions[countryCode].element.setStyle('stroke-width', 1.5);
+                
+                // Make the fill color brighter
+                const accessType = this.countryAccessMap[countryCode] || 'no-access';
+                let color = this.colors[accessType];
+                
+                // Brighten the color by converting to RGB and increasing values
+                const brightenColor = (color) => {
+                    // Convert hex to RGB
+                    const hex = color.replace('#', '');
+                    const r = parseInt(hex.substring(0, 2), 16);
+                    const g = parseInt(hex.substring(2, 4), 16);
+                    const b = parseInt(hex.substring(4, 6), 16);
+                    
+                    // Brighten by 20%
+                    const factor = 1.2;
+                    const newR = Math.min(255, Math.floor(r * factor));
+                    const newG = Math.min(255, Math.floor(g * factor));
+                    const newB = Math.min(255, Math.floor(b * factor));
+                    
+                    // Convert back to hex
+                    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+                };
+                
+                mapObject.regions[countryCode].element.setStyle('fill', brightenColor(color));
+            });
+            
+            // Store the list of highlighted countries
+            this.highlightedCountries = [...countries];
+        } catch (error) {
+            console.error('Error highlighting countries on map:', error);
+        }
+    }
+    
+    // Update map colors and keep highlights if any
     updateMapColors() {
         if (!this.initialized) {
             console.warn('Map not fully initialized, cannot set colors');
@@ -139,7 +220,10 @@ class MapView {
         }
 
         console.log(`Updating map colors for tab: ${this.currentTab}`);
-
+        
+        // Store highlighted countries to reapply highlighting after color update
+        const highlightedCountries = [...this.highlightedCountries];
+        
         // Reset colors by setting all countries to no-access first
         let allCountryCodes = {};
         for (let code in countryCodeMapping) {
@@ -162,12 +246,13 @@ class MapView {
         });
 
         try {
-            // Debug to verify the color map has the correct data
-            // console.log(`Countries to color: ${Object.keys(this.countryAccessMap).length}`);
-            // console.log(`Total color assignments: ${Object.keys(allCountryCodes).length}`);
-
             // Update the map colors using the correct jQVMap API method
             $(this.mapElementId).vectorMap('set', 'colors', allCountryCodes);
+            
+            // Reapply any highlights
+            if (highlightedCountries.length > 0) {
+                this.highlightCountries(highlightedCountries);
+            }
         } catch (error) {
             console.error('Error updating map colors:', error);
         }
@@ -197,7 +282,7 @@ class MapView {
     }
     
     // Helper function to convert country names to country codes
-    getCountryCode(countryName) {
+     getCountryCode(countryName) {
         return countryCodeMapping[countryName];
     }
 }

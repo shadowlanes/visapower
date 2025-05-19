@@ -7,6 +7,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     const mapViewBtn = document.getElementById('map-view-btn');
     const gridViewContent = document.getElementById('grid-view');
     const mapViewContent = document.getElementById('map-view');
+    const searchBtn = document.getElementById('search-countries-btn');
+    const searchOverlay = document.getElementById('search-overlay');
+    const countrySearch = document.getElementById('country-search');
+    const closeSearchBtn = document.getElementById('close-search-btn');
+    
+    // Let's track the search term globally
+    let currentSearchTerm = '';
     
     // Function to convert country code to flag emoji
     function getFlagEmoji(countryCode) {
@@ -111,6 +118,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Create a singleton instance of MapView that will be used
             // throughout the application but won't initialize the map yet
             console.log('Map dependencies loaded, creating MapView instance');
+            setTimeout(() => {}, 500);
             if (!mapView) {
                 mapView = new MapView('#world-map');
             }
@@ -525,7 +533,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         allTab.className = 'tab-btn';
         allTab.dataset.type = 'all';
         allTab.textContent = 'All';
-        document.querySelector('.results-tabs').prepend(allTab);
+
+        // Insert before the first child rather than prepending
+        // This ensures the search button stays at the end
+        const tabsContainer = document.querySelector('.results-tabs');
+        tabsContainer.insertBefore(allTab, tabsContainer.firstChild);
 
         const updatedTabButtons = document.querySelectorAll('.tab-btn');
         updatedTabButtons.forEach(button => {
@@ -579,4 +591,86 @@ document.addEventListener('DOMContentLoaded', async function() {
         // This will update the map with current data
         displayResults(accessibleCountries);
     });
+    
+    // Add search functionality
+    searchBtn.addEventListener('click', () => {
+        searchOverlay.classList.add('active');
+        countrySearch.focus();
+        countrySearch.value = currentSearchTerm; // Restore previous search if any
+    });
+    
+    closeSearchBtn.addEventListener('click', () => {
+        searchOverlay.classList.remove('active');
+    });
+    
+    // Close search on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
+            searchOverlay.classList.remove('active');
+        }
+    });
+    
+    // Perform search as user types
+    countrySearch.addEventListener('input', () => {
+        currentSearchTerm = countrySearch.value.trim().toLowerCase();
+        performSearch(currentSearchTerm);
+    });
+    
+    function performSearch(searchTerm) {
+        if (currentView === 'grid') {
+            searchInGridView(searchTerm);
+        } else if (currentView === 'map') {
+            searchInMapView(searchTerm);
+        }
+    }
+    
+    function searchInGridView(searchTerm) {
+        const countryCards = resultsContainer.querySelectorAll('.country-card');
+        
+        // Reset all highlights first
+        countryCards.forEach(card => {
+            card.classList.remove('country-highlight');
+        });
+        
+        if (!searchTerm) return; // Exit if search is empty
+        
+        // Apply highlights to matching countries
+        countryCards.forEach(card => {
+            const countryName = card.querySelector('span').textContent.toLowerCase();
+            if (countryName.includes(searchTerm)) {
+                card.classList.add('country-highlight');
+            }
+        });
+    }
+    
+    function searchInMapView(searchTerm) {
+        if (!mapView || !mapView.initialized) return;
+        
+        // Get all countries in the current tab
+        const countriesForTab = accessibleCountries[currentTab];
+        
+        // Reset all highlights first
+        mapView.resetHighlights();
+        
+        if (!searchTerm) return; // Exit if search is empty
+        
+        // Find matching countries
+        const matchingCountries = countriesForTab.filter(country => 
+            country.toLowerCase().includes(searchTerm)
+        );
+        
+        // Highlight matching countries on map
+        mapView.highlightCountries(matchingCountries);
+    }
+
+    // Update the display results function to account for search term
+    const originalDisplayResults = displayResults;
+    displayResults = function(countries) {
+        originalDisplayResults(countries);
+        
+        // Re-apply search highlighting if there's an active search
+        if (currentSearchTerm) {
+            performSearch(currentSearchTerm);
+        }
+    };
 });
