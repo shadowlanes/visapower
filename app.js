@@ -572,7 +572,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         gridViewContent.classList.add('active');
         mapViewContent.classList.remove('active');
         currentView = 'grid';
+        
+        // Show search button when in grid view
+        searchBtn.style.display = 'flex';
+        
         displayResults(accessibleCountries);
+        if (currentSearchTerm) {
+            performSearch(currentSearchTerm);
+        }
     });
     
     mapViewBtn.addEventListener('click', () => {
@@ -588,6 +595,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         gridViewContent.classList.remove('active');
         currentView = 'map';
         
+        // Temporarily hide search button when in map view
+        searchBtn.style.display = 'none';
+        
+        // Close search if it's open
+        if (inlineSearchContainer.classList.contains('active')) {
+            closeInlineSearch();
+        }
+        
         // Initialize and display the map on demand
         if (!mapView) {
             console.log('Creating MapView instance (first time)');
@@ -602,6 +617,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // This will update the map with current data
         displayResults(accessibleCountries);
+        
+        // Re-apply search if there was one active
+        if (currentSearchTerm) {
+            performSearch(currentSearchTerm);
+        }
     });
     
     // Add inline search functionality - Fix the event handling for the search button
@@ -623,9 +643,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Fix the issue with clicking on the icon within the button
     // Add a separate event listener for the icon inside the button
-    const searchBtnIcon = searchBtn.querySelector('i');
-    if (searchBtnIcon) {
-        searchBtnIcon.addEventListener('click', function(e) {
+    if (searchBtn.querySelector('i')) {
+        searchBtn.querySelector('i').addEventListener('click', function(e) {
             // Stop propagation to prevent this click from bubbling
             e.stopPropagation();
             
@@ -671,7 +690,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.addEventListener('click', (e) => {
         if (inlineSearchContainer.classList.contains('active') && 
             !inlineSearchContainer.contains(e.target) && 
-            e.target !== searchBtn) {
+            !searchBtn.contains(e.target) && // Ensure clicking search button itself doesn't close
+            !searchBtn.querySelector('i')?.contains(e.target) // Ensure clicking icon in search button doesn't close
+           ) {
             closeInlineSearch();
         }
     });
@@ -692,7 +713,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             searchInMapView(searchTerm);
         }
     }
-    
+
     function searchInGridView(searchTerm) {
         if (!searchTerm) {
             // If search term is empty, reset to the original display order
@@ -793,32 +814,30 @@ document.addEventListener('DOMContentLoaded', async function() {
         return html;
     }
 
-    // Modify the tab button click event to respect search results
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            currentTab = button.dataset.type;
-            
-            // Display results and reapply search if there is an active search term
-            displayResults(accessibleCountries);
-            if (currentSearchTerm) {
-                performSearch(currentSearchTerm);
-            }
-        });
-    });
+    function searchInMapView(searchTerm) {
+        if (!mapView || !mapView.initialized) return;
 
-    // Update grid/map view switchers to maintain search results
-    gridViewBtn.addEventListener('click', () => {
-        gridViewBtn.classList.add('active');
-        mapViewBtn.classList.remove('active');
-        gridViewContent.classList.add('active');
-        mapViewContent.classList.remove('active');
-        currentView = 'grid';
+        // Get all countries in the current tab
+        const countriesForTab = accessibleCountries[currentTab];
         
-        displayResults(accessibleCountries);
-        if (currentSearchTerm) {
-            performSearch(currentSearchTerm);
+        // Reset all highlights first
+        mapView.resetHighlights();
+        
+        if (!searchTerm) {
+            // Reset the count display when search is cleared
+            updateCountDisplay(accessibleCountries);
+            return;
         }
-    });
+        
+        // Find matching countries
+        const matchingCountries = countriesForTab.filter(country => 
+            country.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        // Update the count display with the number of matched countries
+        updateCountDisplay(accessibleCountries, matchingCountries.length);
+        
+        // Highlight matching countries on map
+        mapView.highlightCountries(matchingCountries);
+    }
 });
