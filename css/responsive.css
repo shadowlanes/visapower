@@ -1,0 +1,89 @@
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .input-section, .results-section {
+        width: 100%;
+    }
+     
+    .country-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .results-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .view-toggle {
+        width: 100%;
+    }
+    
+    .view-btn {
+        flex: 1;
+        text-align: center;
+    }
+    
+    header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .tab-btn {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .country-count-display {
+        text-align: center;
+        margin: 5px 0 15px 0;
+    }
+
+    .simplified-footer {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        padding: 1rem 0;
+    }
+    
+    .footer-left, .footer-center, .footer-right {
+        width: 100%;
+    }
+    
+    .footer-left {
+        order: 3;
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+    
+    .footer-center {
+        order: 1;
+    }
+    
+    .footer-right {
+        order: 2;
+    }
+    
+    .search-tab-btn { /* Adjust search button padding on mobile */
+        padding: 10px;
+    }
+}
+
+@media (min-width: 768px) {
+    /* These styles were present but might not be strictly necessary or could be defaults */
+    /* .footer-content {
+        padding: 2rem 3rem;
+    }
+    
+    .disclaimer-section {
+        padding: 1.2rem;
+    }
+    
+    .disclaimer-text p {
+        font-size: 1rem;
+    } */
+}
