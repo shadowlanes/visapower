@@ -690,7 +690,7 @@ select:hover, select:focus {
 /* Make tab buttons and search button hidden when search is active */
 .results-tabs.search-active .tab-btn,
 .results-tabs.search-active .search-tab-btn { /* .search-tab-btn is the class for #search-countries-btn */
-    display: none;
+    display: none !important;
 }
 .results-tabs.search-active {
     border-bottom: none;
