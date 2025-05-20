@@ -1,0 +1,165 @@
+/* Header styling */
+header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeIn 1s ease-out;
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1);
+    letter-spacing: 1px;
+}
+
+.passport-icon {
+    animation: float 3s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 5px;
+    color: var(--accent-color);
+}
+
+header p {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* Main container layout */
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    animation: fadeIn 1s ease-out 0.3s backwards;
+}
+
+/* Input section styling */
+.input-section {
+    background-color: var(--card-color);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: var(--shadow-medium);
+    flex: 1;
+    min-width: 300px;
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--primary-color);
+}
+
+.input-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Results section styling */
+.results-section {
+    background-color: var(--card-color);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: var(--shadow-medium);
+    flex: 2;
+    min-width: 300px;
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--secondary-color);
+}
+
+.results-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer */
+footer { /* This is the old footer style, simplified-footer is used */
+    margin-top: 2.5rem;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+    animation: fadeIn 1s ease-out;
+}
+
+footer i {
+    color: var(--accent-color);
+    margin-right: 5px;
+}
+
+.footer-credits {
+    margin-top: 12px;
+    font-weight: 500;
+}
+
+.author-name { /* General author-name style */
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.github-link { /* General github-link style */
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--text-color);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.github-link:hover {
+    color: var(--secondary-color);
+    transform: scale(1.2);
+}
+
+.github-link i {
+    font-size: 1.2rem;
+    margin-right: 0;
+    color: inherit;
+}
+
+/* Simplified footer styling */
+.simplified-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 1rem 0;
+    color: var(--text-light);
+    border-top: 1px solid var(--border-color);
+}
+
+.footer-left p, 
+.footer-center p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.footer-center {
+    text-align: center;
+}
+
+.footer-center .fa-heart {
+    color: #e74c3c;
+    margin: 0 4px;
+    animation: heartbeat 1.5s infinite;
+}
+
+.footer-right .github-link { /* More specific github-link for footer */
+    font-size: 1.4rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    padding: 6px;
+}
+
+.footer-right .github-link:hover {
+    transform: translateY(-3px) scale(1.1);
+    color: var(--secondary-color);
+}
+
+.simplified-footer .author-name { /* Specific author-name for simplified footer */
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Remove the enhanced-footer styles or add this to override them */
+.enhanced-footer {
+    display: none;
+}

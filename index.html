@@ -19,7 +19,11 @@
     <meta name="twitter:image" content="og-image.jpg">
     <!-- Open Graph Meta Tags end-->
     <title>VisaPower - Check Your Visa-Free Access</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- <link rel="stylesheet" href="styles.css"> --> <!-- Old stylesheet link -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&family=Montserrat:wght@400;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- Add jqvmap CSS -->
@@ -38,17 +42,16 @@
             <div class="input-section">
                 <div class="input-group">
                     <label for="passport-search"><i class="fas fa-globe-americas"></i> Your Passport Country</label>
-                    <!-- The select element will be replaced by JS with the search input and results container -->
-                    <select id="passport-country" required>
+                    <!-- This select is now replaced by JS with an input and a results div -->
+                    <select id="passport-country" required style="display: none;"> <!-- Keep original for graceful degradation or if JS fails early -->
                         <option value="" disabled selected>Select</option>
-                        <!-- Will be populated dynamically -->
                     </select>
+                    <!-- JS will insert the search input and results container here -->
                 </div> 
 
                 <div class="input-group">
                     <label><i class="fas fa-id-card"></i> Current Visas You Hold (if any)</label>
                     <div id="current-visas" class="checkbox-container">
-                        <!-- Will be populated dynamically -->
                         <p class="select-passport-notice">Please select your passport country first</p>
                     </div>
                 </div>
@@ -74,13 +77,13 @@
                 </div>
                 
                 <div class="results-tabs">
-                    <button class="tab-btn active" data-type="visa-free">Visa-Free</button>
+                    <!-- Tabs will be populated/managed by JS, including the "All" tab -->
+                    <button class="tab-btn" data-type="visa-free">Visa-Free</button> <!-- JS will make one active -->
                     <button class="tab-btn" data-type="visa-on-arrival">Visa on Arrival</button>
                     <button class="tab-btn" data-type="e-visa">e-Visa</button>
                     <button id="search-countries-btn" class="search-tab-btn" title="Search Countries">
                         <i class="fas fa-search"></i>
                     </button>
-                    <!-- Updated search input container -->
                     <div class="inline-search-container">
                         <input type="text" id="inline-country-search" placeholder="Search countries...">
                         <button id="close-inline-search-btn" title="Close search">
@@ -88,35 +91,23 @@
                         </button>
                     </div>
                 </div>
-                
+                <!-- Country count display will be inserted here by JS if not present -->
+                 <div class="country-count-display"></div>
+
                 <div class="view-container">
-                    <!-- Grid view (default) -->
                     <div id="grid-view" class="view-content active">
                         <div id="results-container">
                             <p class="empty-state">Select your passport and visas to see available countries</p>
                         </div>
                     </div>
                     
-                    <!-- Map view -->
                     <div id="map-view" class="view-content">
                         <div id="world-map"></div>
                         <div class="map-legend">
-                            <div class="legend-item">
-                                <span class="color-box visa-free"></span>
-                                <span>Visa Free</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="color-box visa-on-arrival"></span>
-                                <span>Visa on Arrival</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="color-box e-visa"></span>
-                                <span>e-Visa</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="color-box no-access"></span>
-                                <span>No Access</span>
-                            </div>
+                            <div class="legend-item"><span class="color-box visa-free"></span>Visa Free</div>
+                            <div class="legend-item"><span class="color-box visa-on-arrival"></span>Visa on Arrival</div>
+                            <div class="legend-item"><span class="color-box e-visa"></span>e-Visa</div>
+                            <div class="legend-item"><span class="color-box no-access"></span>No Access</div>
                         </div>
                     </div>
                 </div>
@@ -138,57 +129,53 @@
         </footer>
     </div>
 
-    <!-- jQuery is required for jqvmap -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- jqvmap Core -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/jquery.vmap.min.js"></script>
-    <!-- jqvmap World Map Data -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/maps/jquery.vmap.world.js"></script>
     
-    <!-- Load data files -->
     <script src="data/schengen-countries.js"></script>
     <script src="data/country-codes.js"></script>
+    <!-- Visa data files (consider consolidating or loading dynamically if many) -->
     <script src="data/visa-data/visa-data-in.js"></script>
     <script src="data/visa-data/visa-data-us.js"></script>
+    <!-- Core Logic & Components -->
     <script src="visa-data-fetcher.js"></script>
     <script src="map-view.js"></script>
-    <script src="app.js"></script>
-    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3ad903aeb088488d82a115a7c5a2fd7d"}'></script><!-- End Cloudflare Web Analytics -->
+    <!-- Refactored JS Files -->
+    <script src="js/utils.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/data_handlers.js"></script>
+    <script src="js/search.js"></script>
+    <!-- Main application script (formerly app.js) -->
+    <script src="app.js"></script> 
+    
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3ad903aeb088488d82a115a7c5a2fd7d"}'></script>
     <script>
+        // The inline script for populating dropdown and fetching IP can be removed
+        // as passport selection is now handled by a search input within app.js (or its new structure)
+        // and default country is set there.
+        // If IP-based auto-selection is still desired, that logic would need to be integrated
+        // into the new passport handling in app.js.
+        // For now, removing this inline script to avoid conflicts.
+        /*
         document.addEventListener("DOMContentLoaded", () => {
             const countryDropdown = document.getElementById('passport-country');
 
-            // Populate dropdown with country codes as values and names as display text
             Object.entries(countryCodeMapping).forEach(([countryName, countryCode]) => {
                 const option = document.createElement('option');
-                option.value = countryCode;
+                option.value = countryCode; // Or countryName if app.js expects names
                 option.textContent = countryName;
                 countryDropdown.appendChild(option);
             });
 
-            // Set default country to India
             const indianOption = Array.from(countryDropdown.options).find(option => option.textContent === "India");
             if (indianOption) {
                 indianOption.selected = true;
+                // Trigger change to load visas if app.js relies on this
+                // countryDropdown.dispatchEvent(new Event('change')); 
             }
-
-            // Fetch visitor's country using an IP geolocation API
-            /* 
-            fetch('https://ipapi.co/json/')
-                .then(response => response.json())
-                .then data => {
-                    const countryCode = data.country_code.toLowerCase();
-
-                    // Auto-select the country if it exists in the dropdown
-                    const countryOption = Array.from(countryDropdown.options).find(option => option.value === countryCode);
-                    if (countryOption) {
-                        countryOption.selected = true;
-                    }
-                })
-                .catch(error => console.error('Error fetching country data:', error));
-            */
         });
+        */
     </script>
 </body>
 </html>
